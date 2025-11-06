@@ -7,7 +7,7 @@ export class Hand {
         this.cards = [];
     }
 
-    createMovingCard(newCardDiv) {
+    cardAnimation(newCardDiv, playerID, handNumber) {
         const cardBack = document.createElement('div')
         const movingCard = newCardDiv.cloneNode(true);
 
@@ -24,12 +24,6 @@ export class Hand {
         movingCard.style.margin = '0'; // override margin
         movingCard.style.transform = 'none'; // reset transform
         movingCard.style.transition = 'transform 0.8s ease-in-out';
-
-        return movingCard, cardBack, deckRect
-    }
-    cardAnimation(newCardDiv, playerID, handNumber) {
-
-        let movingCard, cardBack, deckRect = this.createMovingCard(newCardDiv)
 
         if (playerID !== DEALER_HAND && playerID !== DEALER_HAND_BACK) {
             const playerHandDiv = document.getElementById(playerID + "-hand-" + String(handNumber))
