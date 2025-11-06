@@ -1,3 +1,5 @@
+import { Card } from './classes/Card.js'
+
 export class Deck {
     constructor() {
         this.cards = [];

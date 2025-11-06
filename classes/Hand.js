@@ -1,3 +1,7 @@
+const deckHTML = document.querySelector('.deck')
+const DEALER_HAND_BACK = "dealers-hand-back"
+const DEALER_HAND = "dealers-hand"
+
 export class Hand {
     constructor() {
         this.cards = [];
