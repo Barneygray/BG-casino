@@ -8,7 +8,7 @@ import { Hand } from './Hand.js'
 
 import { Player } from './Player.js'
 
-export class Game {
+export class BlackJack {
     deck;
     dealerHand;
     userHandSplit1;

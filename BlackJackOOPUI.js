@@ -1,5 +1,5 @@
-import { Game } from './classes/Game.js'
+import { BlackJack } from './classes/BlackJack.js'
 
 
-const game = new Game();
-game.start()
+const blackJackGame = new BlackJack();
+blackJackGame.start()
