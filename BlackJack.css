@@ -67,10 +67,11 @@ body {
 .table {
     display: grid;
     grid-template-areas:
-    ". . . . . ."
+    "home . . . . ."
     "dealer dealer dealer dealer dealer dealer"
     ". deck prompt prompt . ."
     "players players players players players players";
+    
     width: 900px;
     height: 800px;
     position:relative;
@@ -189,7 +190,7 @@ body {
 
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.1); /* subtle overlay */
+    background-color: rgba(255, 255, 255, 0.1); 
     color: #f0f0f0;
     padding: 10px 20px;
     border-radius: 8px;
@@ -231,8 +232,6 @@ body {
 
     background-color: #3498db; /* blue */
     color: #fff;
-
-
 }
 
 .second-button {
@@ -284,4 +283,31 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin-bottom: 10px;
     color: rgb(253, 15, 15);
+}
+
+.home-div {
+  padding: 8px 16px;
+  display: flex;               /* Enable flexbox */
+  justify-content: center;     /* Centre horizontally */
+  align-items: center;         /* Centre vertically */
+}
+
+.home-button {
+  font-size: 3em;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  grid-area: home;
+
+  width: 60px;                /* Fixed width */
+  height: 60px;               /* Same as width for square */
+  display: flex;               /* Centre text inside button */
+  justify-content: center;
+  align-items: center;
 }
