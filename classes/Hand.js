@@ -1,6 +1,6 @@
 const deckHTML = document.querySelector('.deck')
-const DEALER_HAND_BACK = "dealers-hand-back"
 const DEALER_HAND = "dealers-hand"
+const DEALER_HAND_BACK = "dealers-hand-back"
 
 export class Hand {
     constructor() {

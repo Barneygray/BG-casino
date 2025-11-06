@@ -1,3 +1,5 @@
+const dealerHandDiv = document.querySelector('.dealers-hand')
+const playersDiv = document.querySelector('.players-hands')
 const actionPromptBox = document.querySelector('.action-prompt-box')
 
 import { Deck } from './Deck.js'
