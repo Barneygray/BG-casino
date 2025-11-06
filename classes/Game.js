@@ -1,10 +1,10 @@
 const actionPromptBox = document.querySelector('.action-prompt-box')
 
-import { Deck } from './classes/Deck.js'
+import { Deck } from './Deck.js'
 
-import { Hand } from './classes/Hand.js'
+import { Hand } from './Hand.js'
 
-import { Player } from './classes/Player.js'
+import { Player } from './Player.js'
 
 export class Game {
     deck;
