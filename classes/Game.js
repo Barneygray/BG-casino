@@ -1,3 +1,5 @@
+const actionPromptBox = document.querySelector('.action-prompt-box')
+
 export class Game {
     deck;
     dealerHand;
