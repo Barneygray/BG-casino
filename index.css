@@ -1,0 +1,52 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0px;
+  background-color: green;
+  color: white;
+  max-width: 900px;
+  max-height: 600px;
+  margin: 0 auto;
+  grid-area:title;
+}
+
+.titlecard {
+    width: 350px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.1); /* subtle overlay */
+    color: #f0f0f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    gap: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.button {
+    padding: 8px 16px;
+    font-size: 1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    background-color: #3498db; /* blue */
+    color: #fff;
+    grid-area:button;
+}
+
+.page-body {
+    display:grid;
+    grid-template-areas: 
+    ". . . . ."
+    " . title title title ."
+    ". . . . ."
+    ". . button . ."
+    ". . . . .";
+}

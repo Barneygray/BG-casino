@@ -36,7 +36,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.1); /* subtle overlay */
+    background-color: rgba(255, 255, 255, 0.1); 
     color: #f0f0f0;
     padding: 10px 20px;
     border-radius: 8px;
