@@ -1,0 +1,287 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  padding: 0px;
+  background-color: green;
+  color: white;
+  max-width: 900px;
+  max-height: 600px;
+  margin: 0 auto;
+}
+
+.dealers-hand {
+    grid-area: dealer;
+    max-width: 100%;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.deck{
+    grid-area: deck;
+    height: 200px;
+    width: 120px;
+    
+}
+
+
+.action-prompt-box {
+    grid-area: prompt;
+    width: 350px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.1); /* subtle overlay */
+    color: #f0f0f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    gap: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.players-hands {
+    grid-area: players;
+    width: 900px;
+    height: 400px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 200px;
+}
+
+.controls {
+    grid-area: controls;
+    width: 600px;
+    height: 150px;
+    display: grid;
+    grid-template-areas:
+    "hit hit hit hit proceed double-down"
+    "stand stand stand stand proceed split";
+}
+
+.table {
+    display: grid;
+    grid-template-areas:
+    ". . . . . ."
+    "dealer dealer dealer dealer dealer dealer"
+    ". deck prompt prompt . ."
+    "players players players players players players";
+    width: 900px;
+    height: 800px;
+    position:relative;
+}
+
+
+.player {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 100px;
+    position: relative;
+    max-width: 900px;
+    width: fit-content;
+}
+
+.card {
+    width: 120px;
+    height: 180px;
+    background-color: white;
+    border: 2px solid #333;
+    border-radius: 10px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 10px;
+    margin-left: -100px;
+    padding: 5px;
+    transform: translateX(50px);
+    position: relative;
+    transition: transform 1s ease-in-out;
+}
+
+.red-card {
+    color: crimson;
+}
+
+.red-card p {
+  margin: 0;
+}
+
+
+.deck-card {
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 1);
+}
+
+.black-card {
+    color: #333;
+}
+
+.top-left {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+}
+
+.bottom-right {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    transform: rotate(180deg);
+}
+
+.black-card p {
+  margin: 0;
+}
+
+.card-image {
+    max-width: 80%;
+    max-height: 60%;
+    object-fit: contain;
+    position: absolute;
+    top: 55px;
+    left: 15px;
+}
+
+.hand { 
+    max-width: 100%;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    position:relative;
+    height: 400px;
+    margin: 0 auto;
+}
+
+.card-back {
+    position: absolute;
+    width: 105px;
+    height: 165px;
+    border-radius: 10px;
+    border: 0;
+    background: repeating-linear-gradient(
+    45deg,
+    #004080,
+    #004080 10px,
+    #ffffff 10px,
+    #ffffff 20px
+    );
+    padding: 5px;
+}
+
+.player-balance {
+    position: absolute;
+    font-size: 20px;
+    color: black;
+    top: 0;
+    white-space: nowrap;
+    width: auto;
+
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.1); /* subtle overlay */
+    color: #f0f0f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+
+}
+
+.prompt-text {
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-bottom: 10px;
+}
+.input-box {
+    padding: 10px 15px;
+    font-size: 1em;
+    border: 2px solid #ffffff33;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #f0f0f0;
+    width: 250px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+}
+
+.first-button {
+    padding: 8px 16px;
+    font-size: 1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    background-color: #3498db; /* blue */
+    color: #fff;
+
+
+}
+
+.second-button {
+    padding: 8px 16px;
+    font-size: 1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    background-color: #e74c3c; /* red */
+    color: #fff;
+}
+
+
+.first-button:hover,
+.second-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.shake {
+  animation: shake 0.3s;
+  border-color: red;
+}
+
+.win {
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-bottom: 10px;
+    color: rgb(15, 216, 15);
+}
+
+.lose {
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-bottom: 10px;
+    color: rgb(253, 15, 15);
+}
