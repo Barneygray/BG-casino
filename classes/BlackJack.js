@@ -273,9 +273,9 @@ export class BlackJack {
         handDiv.className = "hand"
         document.getElementById(player.name).appendChild(handDiv)
 
-        player.hand.addCard(this.deck.drawCard(), player.name, 1);
+        player.hand.addCard(this.deck.drawCard(), player.name, 1, "blackjack");
         setTimeout(() => {
-            player.hand.addCard(this.deck.drawCard(), player.name, 1);
+            player.hand.addCard(this.deck.drawCard(), player.name, 1, "blackjack");
         }, 500)
 
         if (this.isBlackJack(player)) {
@@ -297,8 +297,8 @@ export class BlackJack {
         handDiv.className = "hand"
         document.getElementById(String(player.name)).appendChild(handDiv)
 
-        this.userHandSplit1.addCard(player.hand.cards[0], player.name, 1);
-        this.userHandSplit2.addCard(player.hand.cards[1], player.name, 2);
+        this.userHandSplit1.addCard(player.hand.cards[0], player.name, 1, "blackjack");
+        this.userHandSplit2.addCard(player.hand.cards[1], player.name, 2, "blackjack");
 
         const lastChild = document.getElementById(String(player.name) + "-hand-1").lastElementChild
         document.getElementById(String(player.name) + "-hand-1").removeChild(lastChild)
@@ -323,7 +323,7 @@ export class BlackJack {
         const choice = await this.createPromptButtonResponse(String(player.name) + ", Double Down?", "Yes", "No")
         if (choice === "Yes") {
             player.bet*=2;
-            player.hand.addCard(this.deck.drawCard(), player.name, 1)
+            player.hand.addCard(this.deck.drawCard(), player.name, 1, "blackjack")
             return true
         } 
     }
@@ -331,9 +331,9 @@ export class BlackJack {
     async dealerDeal() {
         this.dealerHand = new Hand()
         setTimeout(() => {
-            this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand");
+            this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand", 1,"blackjack");
             setTimeout(() => {
-                this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand-back")
+                this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand-back", 1,"blackjack")
             }, 500);
         }, 500);
 
@@ -382,7 +382,7 @@ export class BlackJack {
         const choice = await this.createPromptButtonResponse(String(player.name) +", Hit or Stand?", "Hit", "Stand");
 
             if (choice === "Hit") {
-                await player.hand.addCard(this.deck.drawCard(), player.name, hand)
+                await player.hand.addCard(this.deck.drawCard(), player.name, hand, "blackjack")
             } else if (choice === "Stand") {
                 break;
             }
@@ -406,7 +406,7 @@ export class BlackJack {
         await new Promise(resolve => setTimeout(resolve, 300));
         while (this.dealerHand.getDealerTotal() < 17 && this.dealerHand.getDealerTotal() < this.highestScore) {
             await new Promise(resolve => setTimeout(resolve, 500));
-            this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand");
+            this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand", 1, "blackjack");
         }
 
         await new Promise(resolve => setTimeout(resolve, 500));

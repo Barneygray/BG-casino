@@ -2,12 +2,19 @@ const deckHTML = document.querySelector('.deck')
 const DEALER_HAND = "dealers-hand"
 const DEALER_HAND_BACK = "dealers-hand-back"
 
+const opponent1Hand = document.querySelector('.opponent1')
+const opponent2Hand = document.querySelector('.opponent2')
+const opponent3Hand = document.querySelector('.opponent3')
+const playerPokerHand = document.querySelector('.player-hand')
+
+import { Hand as PokerHand } from 'pokersolver'
+
 export class Hand {
     constructor() {
         this.cards = [];
     }
 
-    cardAnimation(newCardDiv, playerID, handNumber) {
+    cardAnimationBlackJack(newCardDiv, playerID, handNumber) {
         const cardBack = document.createElement('div')
         const movingCard = newCardDiv.cloneNode(true);
 
@@ -63,6 +70,45 @@ export class Hand {
         }
     }
 
+    cardAnimationPoker(newCardDiv, playerID) {
+        const cardBack = document.createElement('div')
+        const movingCard = newCardDiv.cloneNode(true);
+
+        cardBack.classList.add('card-back')
+        cardBack.id = "dealer-card-back"
+        movingCard.appendChild(cardBack)
+        document.body.appendChild(movingCard);
+
+        const deckRect = deckHTML.getBoundingClientRect();
+        
+        movingCard.style.position = 'absolute';
+        movingCard.style.left = `${deckRect.left-100}px`;
+        movingCard.style.top = `${deckRect.top}px`;            
+        movingCard.style.margin = '0'; // override margin
+        movingCard.style.transform = 'none'; // reset transform
+        movingCard.style.transition = 'transform 0.8s ease-in-out';
+
+        if (["opponent1", "opponent2", "opponent3"].includes(playerID)) {
+            const opponentHandDiv = document.getElementById(playerID)
+            setTimeout(() => this.moveCard(opponentHandDiv, movingCard, deckRect, true), 100)
+            setTimeout (() => {
+                movingCard.remove();
+                cardBack.classList.add('card-back')
+                cardBack.id = "dealer-card-back"
+                newCardDiv.appendChild(cardBack)
+                opponentHandDiv.appendChild(newCardDiv)
+            }, 800)
+        } else {
+            const playerHandDiv = document.querySelector('.player-hand')
+            setTimeout(() => this.moveCard(playerHandDiv, movingCard, deckRect), 100)
+            setTimeout(() => {
+                movingCard.remove()
+                playerHandDiv.appendChild(newCardDiv)
+            }, 800)
+        } 
+        }
+
+    }
 
     addCardHTML(card, playerID, hand) {
         const newCardDiv = document.createElement('div')
@@ -85,17 +131,21 @@ export class Hand {
         newCardDiv.appendChild(cardText2)
 
         const cardImg = document.createElement('img')
-        cardImg.src = 'Ernst-Young-Logo.png'
+        cardImg.src = './images/Ernst-Young-Logo.png'
         cardImg.className = 'card-image'
         newCardDiv.appendChild(cardImg)
 
-        this.cardAnimation(newCardDiv, playerID, hand)
+        if (game === "blackjack") { 
+            this.cardAnimationBlackJack(newCardDiv, playerID, hand)
+        } else if (game === "poker") {
+            this.cardAnimationPoker(newCardDiv, playerID)
+        }
     }
 
-    async addCard(card, playerID, hand) {
+    async addCard(card, playerID, hand, game) {
         this.cards.push(card)
         
-        this.addCardHTML(card, playerID, hand)
+        this.addCardBlackJackHTML(card, playerID, hand, game)
     }
 
     getPlayerTotal() {
@@ -145,6 +195,36 @@ export class Hand {
         return t;
     }
 
+    mapToPokerSolver(cardsArray) {
+        const suitMap = {
+        '❤': 'h', // hearts
+        '♦': 'd', // diamonds
+        '♣': 'c', // clubs
+        '♠': 's'  // spades
+        };
+        const rankMap = {
+            '10' : 'T'
+        };
+
+        
+        return cardsArray.map(card => {
+            const suitSymbol = card.slice(-1); // last character
+            const rankPart = card.slice(0, -1); // everything except last character
+
+            const newRank = rankMap[rankPart] || rankPart;
+            const newSuit = suitMap[suitSymbol];
+
+            return newRank + newSuit;
+        });
+
+    }
+    solveHand(communityCards) {
+        let totalHand = [...this.cards, ...communityCards.cards]
+
+        let convertedHand = this.mapToPokerSolver(totalHand)
+
+        return PokerHand.solve(convertedHand)
+    }
 
     isBust() {
         return(this.getPlayerTotal() > 21)
