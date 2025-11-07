@@ -3,7 +3,12 @@ const communityCardsDiv = document.querySelector('.community-cards')
 const actionBoxDiv = document.querySelector('.action-box')
 const potDiv = document.querySelector('.pot')
 const pokerPlayerDiv = document.querySelector('.player-area')
-import { Hand as PokerHand } from 'pokersolver'
+
+const playerHand = document.querySelector('.player-hand')
+const opp1Hand = document.querySelector('.opponent1')
+const opp2Hand = document.querySelector('.opponent2')
+const opp3Hand = document.querySelector('.opponent3')
+import { Hand as PokerHand } from 'https://cdn.skypack.dev/pokersolver'
 
 
 import { Deck } from './Deck.js'
@@ -109,8 +114,9 @@ export class Poker {
 
     }
 
-    askNumberOfPlayers() {
-        this.numOpponents = this.createPromptNumResponse("How many Opponents? (1-3):");
+    async askNumberOfPlayers() {
+        this.numOpponents = await this.createPromptNumResponse("How many Opponents? (1-3):");
+        this.opponentsSetUp()
     }
 
     opponentsSetUp() {
@@ -118,13 +124,11 @@ export class Poker {
             let newOpp = new PokerOpponent()
             this.opponents.push(newOpp)
 
-            const oppDiv = document.createElement('div')
-            oppDiv.id = newOpp.name
-            oppDiv.className = "opponent-" + String(i) + "-hand"
-            opponentsHandsDiv.appendChild(oppDiv)
+            newOpp.id = "opponent" + String(i+1)
         }
 
-        this.activeplayers = [...this.opponents, this.player];
+        this.activePlayers = [...this.opponents, this.player];
+        this.turnOrder = this.activePlayers
     }
 
     playerSetUp() {
@@ -134,17 +138,21 @@ export class Poker {
         //add this to player div
     }
 
+    emptyHands() {
+        playerHand.innerHTML = ""
+        opp1Hand.innerHTML = ""
+        opp2Hand.innerHTML = ""
+        opp3Hand.innerHTML = ""
+    }
+    
     gameSetUp() {
         this.deck = new Deck();
         this.deck.shuffle();
-        
-
-        //empty opponents hands in html
     }
 
     establishTurnOrder() {
         this.turnOrder.push(this.turnOrder.shift())
-
+        console.log(this.turnOrder)
         this.turnOrder = this.turnOrder.filter(player => player.isStillActive);
     }
     initializeRound() {
@@ -160,8 +168,8 @@ export class Poker {
     
     dealOpponentsHands() {
         for (let opponent of this.opponents) {
-            opponent.hand.addCard(this.deck.drawCard(), opponent.name, 1, "poker")
-            opponent.hand.addCard(this.deck.drawCard(), opponent.name, 1, "poker")
+            opponent.hand.addCard(this.deck.drawCard(), opponent.id, 1, "poker")
+            opponent.hand.addCard(this.deck.drawCard(), opponent.id, 1, "poker")
         }
     }
 
@@ -223,8 +231,7 @@ export class Poker {
         const winningHandDescription = winningHand.descr
     }
     async play() {
-        this.askNumberOfPlayers()
-        this.opponentsSetUp()
+        await this.askNumberOfPlayers()
         this.playerSetUp()
         this.gameSetUp()
         this.initializeRound()
@@ -244,3 +251,6 @@ export class Poker {
         this.playAgain()
     }
 }
+
+const newpokerGame = new Poker()
+newpokerGame.play()

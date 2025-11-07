@@ -1,0 +1,261 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #0b3d0b; /* Poker table green */
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.room {
+    position: relative;
+    width: 1000px;
+    height: 700px;
+    background-color: #145214;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Home Button */
+.home-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+/* Opponents */
+.opponents-hands {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#opponent1, #opponent2, #opponent3 {
+    width: 120px;
+    height: 160px;
+    background-color: #fff;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px;
+    text-align: center;
+
+}
+
+/* Positioning Opponents */
+#opponent1 {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#opponent2 {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#opponent3 {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Table Area */
+.table {
+    width: 600px;
+    height: 300px;
+    background-color: #0b3d0b;
+    border-radius: 150px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px;
+}
+
+.community-cards {
+    width: 400px;
+    height: 100px;
+    background-color: #fff;
+    border-radius: 10px;
+    display: flex;
+    margin-left: 40px;
+    gap: 100px;
+}
+
+.deck, .pot, .action-box {
+    background-color: #fff;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.deck {
+    width: 80px;
+    height: 100px;
+    background-color: #0b3d0b;
+}
+
+.pot {
+    width: 80px;
+    height: 80px;
+}
+
+.action-box {
+    width: 300px;
+    height: 50px;
+    margin-top: 10px;
+}
+
+/* Player Area */
+.player-area {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 160px;
+    background-color: #fff;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10px;
+    text-align: center;
+}
+
+.player-hand {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+}
+
+.card {
+    width: 80px;
+    height: 120px;
+    background-color: white;
+    border: 2px solid #333;
+    border-radius: 10px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 10px;
+    margin-left: -100px;
+    padding: 5px;
+    transform: translateX(50px);
+    position: relative;
+    transition: transform 1s ease-in-out;
+}
+
+.red-card {
+    color: crimson;
+}
+
+.red-card p {
+  margin: 0;
+}
+
+
+.deck-card {
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 1);
+}
+
+.black-card {
+    color: #333;
+}
+
+.top-left {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+}
+
+.bottom-right {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    transform: rotate(180deg);
+}
+
+.black-card p {
+  margin: 0;
+}
+
+.card-image {
+    max-width: 80%;
+    max-height: 60%;
+    object-fit: contain;
+    position: absolute;
+    top: 55px;
+    left: 15px;
+}
+
+.card-back {
+    position: relative;
+    width: 66px;
+    height: 105px;
+    border-radius: 10px;
+    border: 0;
+    background: repeating-linear-gradient(
+    45deg,
+    #004080,
+    #004080 10px,
+    #ffffff 10px,
+    #ffffff 20px
+    );
+    padding: 5px;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.shake {
+  animation: shake 0.3s;
+  border-color: red;
+}

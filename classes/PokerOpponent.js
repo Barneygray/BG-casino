@@ -2,6 +2,8 @@ import { Hand } from './Hand.js'
 
 export class PokerOpponent {
     money;
+    name;
+    id;
     constructor() {
         this.hand = new Hand()
         this.isStillActive = true;

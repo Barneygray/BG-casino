@@ -18,4 +18,12 @@ export class Player {
     lose(bet) {
         this.moneyLeft -= bet;
     }
+
+    makeBigBlind() {
+        this.isBigBlind = true;
+    }
+
+    makeSmallBlind() {
+        this.isSmallBlind = true;
+    }
 }

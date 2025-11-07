@@ -2,12 +2,7 @@ const deckHTML = document.querySelector('.deck')
 const DEALER_HAND = "dealers-hand"
 const DEALER_HAND_BACK = "dealers-hand-back"
 
-const opponent1Hand = document.querySelector('.opponent1')
-const opponent2Hand = document.querySelector('.opponent2')
-const opponent3Hand = document.querySelector('.opponent3')
-const playerPokerHand = document.querySelector('.player-hand')
-
-import { Hand as PokerHand } from 'pokersolver'
+import { Hand as PokerHand } from 'https://cdn.skypack.dev/pokersolver'
 
 export class Hand {
     constructor() {
@@ -98,6 +93,13 @@ export class Hand {
                 newCardDiv.appendChild(cardBack)
                 opponentHandDiv.appendChild(newCardDiv)
             }, 800)
+        } else if (playerID === "community") {
+           const communityCardDiv = document.querySelector('.community-cards') 
+           setTimeout(() => this.moveCard(communityCardDiv, movingCard, deckRect), 100)
+            setTimeout(() => {
+                movingCard.remove()
+                communityCardDiv.appendChild(newCardDiv)
+            }, 800)
         } else {
             const playerHandDiv = document.querySelector('.player-hand')
             setTimeout(() => this.moveCard(playerHandDiv, movingCard, deckRect), 100)
@@ -106,11 +108,9 @@ export class Hand {
                 playerHandDiv.appendChild(newCardDiv)
             }, 800)
         } 
-        }
-
     }
 
-    addCardHTML(card, playerID, hand) {
+    addCardHTML(card, playerID, hand, game) {
         const newCardDiv = document.createElement('div')
         newCardDiv.classList.add('card')
         if (['♣', '♠'].includes(card.suit)) {
@@ -145,7 +145,7 @@ export class Hand {
     async addCard(card, playerID, hand, game) {
         this.cards.push(card)
         
-        this.addCardBlackJackHTML(card, playerID, hand, game)
+        this.addCardHTML(card, playerID, hand, game)
     }
 
     getPlayerTotal() {
