@@ -1,14 +1,15 @@
 export class Player {
     name;
-    bet;
     hand;
     constructor() {
+        this.money = 1000;
         this.moneyLeft = 1000;
         this.isStillActive = true;
         this.didSplit = false;
         this.isFolded = false;
         this.isSmallBlind = false;
         this.isBigBlind = false
+        this.bet = 0;
     }
 
     win(bet) {
