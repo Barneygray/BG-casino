@@ -8,6 +8,9 @@ const playerHand = document.querySelector('.player-hand')
 const opp1Hand = document.querySelector('.opponent1')
 const opp2Hand = document.querySelector('.opponent2')
 const opp3Hand = document.querySelector('.opponent3')
+
+const playerNameBox = document.querySelector('.p')
+
 import { Hand as PokerHand } from 'https://cdn.skypack.dev/pokersolver'
 
 
@@ -69,6 +72,41 @@ export class Poker {
         })
     } 
 
+    async createPromptTextResponse(prompt) {
+        const promptText = document.createElement('p')
+        promptText.textContent = prompt
+        promptText.className = "prompt-text"
+
+        const inputBox = document.createElement('input')
+        inputBox.className = "input-box"
+        inputBox.type = "text"
+
+
+        actionBoxDiv.innerHTML = ""
+        actionBoxDiv.appendChild(promptText)
+        actionBoxDiv.appendChild(inputBox)
+        inputBox.focus();
+
+        return new Promise((resolve) => {
+            inputBox.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    const input = e.target.value;
+                    const i = e.target;
+                    const value = i.value.trim();
+
+                    if (value !== "") {
+                        resolve(input)
+                    } else {
+                        actionPromptBox.classList.add("shake")
+                        setTimeout(() => {
+                            actionPromptBox.classList.remove("shake")
+                        }, 300)
+                    }
+                }
+            })
+        })
+    } 
+
     async createPromptButtonResponse(prompt, input1, input2, input3) {
         const promptText = document.createElement('p')
         promptText.textContent = prompt
@@ -114,27 +152,51 @@ export class Poker {
 
     }
 
+    async displayText(prompt) {
+        const promptText = document.createElement('p')
+        promptText.textContent = prompt
+        promptText.className = "prompt-text"
+
+        actionBoxDiv.innerHTML = ""
+        actionBoxDiv.appendChild(promptText)
+
+        await new Promise (resolve => setTimeout(resolve, 1000))
+    }
+
+    async askPlayerName() {
+        this.player.name = await this.createPromptTextResponse("What is your name?: ")
+    }
+
     async askNumberOfPlayers() {
         this.numOpponents = await this.createPromptNumResponse("How many Opponents? (1-3):");
         this.opponentsSetUp()
     }
 
-    opponentsSetUp() {
+    async opponentsSetUp() {
         for (let i=0; i < this.numOpponents; i++) {
             let newOpp = new PokerOpponent()
+            await newOpp.init()
             this.opponents.push(newOpp)
 
             newOpp.id = "opponent" + String(i+1)
+            const oppNameBox = document.getElementById('o' +String(i+1))
+            const oppBalance = document.createElement('p')
+            oppBalance.textContent = newOpp.name + ': £' + String(newOpp.money)
+            //oppBalance.className = "opp"+String(i+1)+"-balance"
+            oppNameBox.appendChild(oppBalance)
+
         }
 
         this.activePlayers = [...this.opponents, this.player];
+        this.nonFoldedPlayers = this.activePlayers
         this.turnOrder = this.activePlayers
     }
 
     playerSetUp() {
         const playerBalance = document.createElement('p')
-        playerBalance.textContent = '£' + this.player.moneyLeft
+        playerBalance.textContent = this.player.name + ': £' + this.player.moneyLeft
         playerBalance.className = "player-balance"
+        playerNameBox.appendChild(playerBalance)
         //add this to player div
     }
 
@@ -144,7 +206,7 @@ export class Poker {
         opp2Hand.innerHTML = ""
         opp3Hand.innerHTML = ""
     }
-    
+
     gameSetUp() {
         this.deck = new Deck();
         this.deck.shuffle();
@@ -166,22 +228,22 @@ export class Poker {
         this.turnOrder.at(-2).makeSmallBlind()
     }
     
-    dealOpponentsHands() {
+    async dealOpponentsHands() {
         for (let opponent of this.opponents) {
-            opponent.hand.addCard(this.deck.drawCard(), opponent.id, 1, "poker")
-            opponent.hand.addCard(this.deck.drawCard(), opponent.id, 1, "poker")
+            await opponent.hand.addCard(this.deck.drawCard(), opponent.id, 1, "poker")
+            await opponent.hand.addCard(this.deck.drawCard(), opponent.id, 1, "poker")
         }
     }
 
-    dealPlayersHand() {
+    async dealPlayersHand() {
         this.player.hand = new Hand();
 
         const handDiv = document.createElement('div')
         handDiv.className = "player-hand"
         pokerPlayerDiv.appendChild(handDiv)
 
-        this.player.hand.addCard(this.deck.drawCard(), "p", 1, "poker")
-        this.player.hand.addCard(this.deck.drawCard(), "p", 1, "poker")
+        await this.player.hand.addCard(this.deck.drawCard(), "p", 1, "poker")
+        await this.player.hand.addCard(this.deck.drawCard(), "p", 1, "poker")
     }
 
     async bettingRound() {
@@ -204,51 +266,66 @@ export class Poker {
                     currentPlayer.isFolded = true;
                 }
             } else {
-                await currentPlayer.takeAction(this.currentBet)
+                const oppAction = await currentPlayer.takeAction(this.currentBet, this.communityCards, this.nonFoldedPlayers.length - 1)
+                if (oppAction === "Call") {
+                    currentPlayer.bet = this.currentBet;
+                    await this.displayText(currentPlayer.name + " calls.")
+                } else if (oppAction.includes("Raise")) {
+                    this.currentBet += parseInt(oppAction.match(/\d+/g))
+                    currentPlayer.bet = this.currentBet
+                    await this.displayText(currentPlayer.name + " raises " + String(parseInt(oppAction.match(/\d+/g))))
+                } else if (oppAction === "Fold") {
+                    currentPlayer.isFolded = true;
+                    await this.displayText(currentPlayer.name + " folds.")
+                } else {
+                    await this.displayText(currentPlayer.name + " checks.")
+                }
             }
         }
     }
 
-    dealFlop() {
-        this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
-        this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
-        this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
+    async dealFlop() {
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
     }
 
-    dealTurn() {
-        this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
+    async dealTurn() {
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
     }
 
-    dealRiver() {
-        this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
+    async dealRiver() {
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
     }
 
     revealWinner() {
         // show all players cards
 
         const remainingHands = this.nonFoldedPlayers.map(player => player.hand.mapToPokerSolver())
-        let winningHand = PokerHand.winners([remainingHands])
+        console.log(remainingHands)
+        let winningHand = PokerHand.winners(remainingHands)
         const winningHandDescription = winningHand.descr
     }
     async play() {
+        await this.askPlayerName()
         await this.askNumberOfPlayers()
         this.playerSetUp()
         this.gameSetUp()
         this.initializeRound()
 
-        this.dealOpponentsHands()
-        this.dealPlayersHand()
+        await this.dealOpponentsHands()
+        await this.dealPlayersHand()
 
         await this.bettingRound(); //Pre-flop
-        this.dealFlop()
+        await this.dealFlop()
         await this.bettingRound(); //Post-flop
-        this.dealTurn()
+        await this.dealTurn()
         await this.bettingRound(); //After Turn
-        this.dealRiver()
+        await this.dealRiver()
         await this.bettingRound(); //After River
 
         this.revealWinner()
-        this.playAgain()
+        //this.playAgain()
     }
 }
 

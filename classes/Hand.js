@@ -208,8 +208,9 @@ export class Hand {
 
         
         return cardsArray.map(card => {
-            const suitSymbol = card.slice(-1); // last character
-            const rankPart = card.slice(0, -1); // everything except last character
+            
+            const suitSymbol = card.suit; // last character
+            const rankPart = card.rank; // everything except last character
 
             const newRank = rankMap[rankPart] || rankPart;
             const newSuit = suitMap[suitSymbol];
@@ -218,6 +219,7 @@ export class Hand {
         });
 
     }
+
     solveHand(communityCards) {
         let totalHand = [...this.cards, ...communityCards.cards]
 

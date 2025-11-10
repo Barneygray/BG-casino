@@ -23,6 +23,13 @@ export class Deck {
         }
     }
 
+    removeCards(rCards) {
+        this.cards = this.cards.filter(deckCard => 
+            !rCards.some(rCard => rCard.rank === deckCard.rank && rCard.suit === deckCard.suit)
+        );
+
+    }
+
     drawCard() {
         return this.cards.pop()
     }
