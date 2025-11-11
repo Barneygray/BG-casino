@@ -208,7 +208,7 @@ export class Poker {
         playerNameBox.appendChild(playerBalance)
 
         const playerBet = document.createElement('p')
-        playerBet.textContent = 'Current Bet: £0'
+        playerBet.textContent = 'Current Bet: £0' 
         playerBet.id = this.player.name
         playerNameBox.appendChild(playerBet)
     }
@@ -220,7 +220,7 @@ export class Poker {
         opp3Hand.innerHTML = ""
     }
 
-    gameSetUp() {
+    roundSetUp() {
         this.deck = new Deck();
         this.deck.shuffle();
     }
@@ -231,6 +231,17 @@ export class Poker {
         this.turnOrder = this.turnOrder.filter(player => player.isStillActive);
     }
 
+    updateBigBlind(player) {
+        player.bet = this.bigBlind
+        const playerBet = document.getElementById(player.name)
+        playerBet.textContent = 'Current Bet: £' + player.bet
+    }
+
+    updateSmallBlind(player) {
+        player.bet = this.smallBlind
+        const playerBet = document.getElementById(player.name)
+        playerBet.textContent = 'Current Bet: £' + player.bet
+    }
     initializeRound() {
         this.establishTurnOrder()
 
@@ -240,6 +251,16 @@ export class Poker {
         }
         this.turnOrder.at(-1).makeBigBlind()
         this.turnOrder.at(-2).makeSmallBlind()
+
+        for (let player of this.turnOrder) {
+            if (player.isBigBlind === true) {
+                this.updateBigBlind(player)
+            } else if (player.isSmallBlind === true) {
+                this.updateSmallBlind(player)
+            }
+        }
+
+        this.currentBet = this.bigBlind
     }
     
     async dealOpponentsHands() {
@@ -301,11 +322,15 @@ export class Poker {
         currentPlayer.isFolded = true;
     }
 
+    playerCheck(currentPlayer) {
+        currentPlayer.money -= currentPlayer.bet
+    }
+
     async cpuCall(currentPlayer) {
         currentPlayer.bet = this.currentBet;
         await this.displayText(currentPlayer.name + " calls.")
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
-        currentPlayer.money -= this.currentPlayer.bet
+        currentPlayer.money -= currentPlayer.bet
     }
 
     async cpuRaise(currentPlayer, oppAction) {
@@ -319,6 +344,7 @@ export class Poker {
 
     async cpuCheck(currentPlayer) {
         await this.displayText(currentPlayer.name + " checks.")
+        currentPlayer.money -= currentPlayer.bet
     }
 
     async cpuFold(currentPlayer) {
@@ -385,20 +411,57 @@ export class Poker {
         await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
     }
 
-    revealWinner() {
+    determineWinner() {
         // show all players cards
+        let remainingHandsSolved = []
+        for (let player of this.nonFoldedPlayers) {
+            const solvedHand = player.hand.solveHand(this.communityCards)
+            remainingHandsSolved.push(solvedHand)
+        }
 
-        const remainingHands = this.nonFoldedPlayers.map(player => player.hand.mapToPokerSolver())
-        console.log(remainingHands)
-        let winningHand = PokerHand.winners(remainingHands)
-        const winningHandDescription = winningHand.descr
+        const winners = PokerHand.winners(remainingHandsSolved)
+        let winningPlayers = []
+
+        for (let player of this.nonFoldedPlayers) {
+            const solvedHand = player.hand.solveHand(this.communityCards)
+            if (winners.includes(solvedHand)) {
+                winningPlayers.push(player)
+                player.money += this.pot / winners.length
+            }
+        }
+
+        this.revealWinner(winningPlayers)
     }
-    async play() {
+
+    async revealWinner(winningPlayers) {
+        const winningHandDescription = winningHand.descr
+
+        if (winningPlayers.length > 1) {
+            await this.displayText("Tie! " + winningHandDescription)
+        } else {
+            await this.displayText(winningPlayers[0].name + " wins with a " + winningHandDescription)
+        }
+
+    }
+
+    async playAgain() {
+        let playAgain = await this.createPromptButtonResponse("Play Again?", "Yes", "No")
+        
+        if (playAgain === "Yes") {
+            await this.play();
+        } else {
+            this.restartGame()
+        }
+    }
+
+    async gameSetUp() {
         await this.askPlayerName()
         await this.askNumberOfPlayers()
         this.playerSetUp()
+    }
 
-        this.gameSetUp()
+    async play() {
+        this.roundSetUp()
         this.initializeRound()
 
         await this.dealOpponentsHands()
@@ -412,10 +475,11 @@ export class Poker {
         await this.dealRiver()
         await this.bettingRound(); //After River
 
-        this.revealWinner()
-        //this.playAgain()
+        this.determineWinner()
+        this.playAgain()
     }
 }
 
 const newpokerGame = new Poker()
+newpokerGame.gameSetUp()
 newpokerGame.play()
