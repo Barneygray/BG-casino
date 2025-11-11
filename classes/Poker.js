@@ -190,7 +190,6 @@ export class Poker {
         }
 
         this.activePlayers = [...this.opponents, this.player];
-        console.log(this.activePlayers)
         this.nonFoldedPlayers = this.activePlayers
         this.turnOrder = this.activePlayers
     }
@@ -481,6 +480,7 @@ export class Poker {
 
         for (let player of this.nonFoldedPlayers) {
             const solvedHand = player.hand.solveHand(this.communityCards)
+            console.log(solvedHand.descr)
             if (winners.some(w => w.descr === solvedHand.descr)) {
                 winningPlayers.push(player)
                 console.log(player.name)
@@ -499,7 +499,6 @@ export class Poker {
         if (winningPlayers.length > 1) {
             await this.displayText("Tie! " + winningHandDescription)
         } else {
-            console.log(winningPlayers)
             await this.displayText(winningPlayers[0].name + " wins with a " + winningHandDescription)
         }
 
