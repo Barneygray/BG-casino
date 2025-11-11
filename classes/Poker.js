@@ -23,13 +23,13 @@ export class Poker {
     numOpponents;
     deck;
     bettingComplete;
+    communityCards;
     constructor() {
         this.opponents = [];
         this.activePlayers = [];
         this.nonFoldedPlayers = [];
         this.turnOrder = [];
         this.player = new Player()
-        this.communityCards = new Hand()
         this.smallBlind = 20;
         this.bigBlind = 40;
         this.whosTurn = 0;
@@ -224,6 +224,7 @@ export class Poker {
             opponent.hand = new Hand()
         }
         this.player.hand = new Hand()
+        this.communityCards = new Hand()
     }
 
     establishTurnOrder() {
