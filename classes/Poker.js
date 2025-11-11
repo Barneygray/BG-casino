@@ -242,6 +242,7 @@ export class Poker {
         const playerBet = document.getElementById(player.name)
         playerBet.textContent = 'Current Bet: £' + player.bet
     }
+
     initializeRound() {
         this.establishTurnOrder()
 
@@ -286,9 +287,11 @@ export class Poker {
             this.pot += player.bet 
             player.bet = 0;
             this.updatePlayerHTML(player, player.name)
+            player.money -= player.bet
         }
         const potText = document.getElementById("pot-text")
         potText.innerHTML = "Pot: £" + String(this.pot)
+        this.currentBet = 0;
     }
 
     updatePlayerHTML(player, id) {
@@ -305,7 +308,6 @@ export class Poker {
 
     playerCall(currentPlayer) {
         currentPlayer.bet = this.currentBet;
-        currentPlayer.money -= currentPlayer.bet
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
     }
 
@@ -314,7 +316,6 @@ export class Poker {
         this.currentBet += raiseAmount;
         this.bettingComplete = false;
         currentPlayer.bet = this.currentBet;
-        currentPlayer.money -= currentPlayer.bet
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
 }
 
@@ -323,14 +324,12 @@ export class Poker {
     }
 
     playerCheck(currentPlayer) {
-        currentPlayer.money -= currentPlayer.bet
     }
 
     async cpuCall(currentPlayer) {
         currentPlayer.bet = this.currentBet;
         await this.displayText(currentPlayer.name + " calls.")
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
-        currentPlayer.money -= currentPlayer.bet
     }
 
     async cpuRaise(currentPlayer, oppAction) {
@@ -339,12 +338,10 @@ export class Poker {
         this.bettingComplete = false;
         await this.displayText(currentPlayer.name + " raises " + String(parseInt(oppAction.match(/\d+/g))))
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
-        currentPlayer.money -= currentPlayer.bet
     }
 
     async cpuCheck(currentPlayer) {
         await this.displayText(currentPlayer.name + " checks.")
-        currentPlayer.money -= currentPlayer.bet
     }
 
     async cpuFold(currentPlayer) {
@@ -353,7 +350,6 @@ export class Poker {
     }
     async bettingRound() {
         this.bettingComplete = false;
-
         while (!this.bettingComplete || this.nonFoldedPlayers.length === 1) {
             this.bettingComplete = true;
 
@@ -394,6 +390,7 @@ export class Poker {
                 this.bettingComplete = this.bettingComplete && this.nonFoldedPlayers.every(p => p.isFolded || p.bet === this.currentBet)
             }
         }
+        this.takeBets()
         this.updatePot()
     }
 
@@ -430,11 +427,11 @@ export class Poker {
             }
         }
 
-        this.revealWinner(winningPlayers)
+        this.revealWinner(winners, winningPlayers)
     }
 
-    async revealWinner(winningPlayers) {
-        const winningHandDescription = winningHand.descr
+    async revealWinner(winners, winningPlayers) {
+        const winningHandDescription = winners.descr
 
         if (winningPlayers.length > 1) {
             await this.displayText("Tie! " + winningHandDescription)
@@ -481,5 +478,5 @@ export class Poker {
 }
 
 const newpokerGame = new Poker()
-newpokerGame.gameSetUp()
+await newpokerGame.gameSetUp()
 newpokerGame.play()

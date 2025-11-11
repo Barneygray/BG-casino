@@ -54,7 +54,6 @@ body {
 #opponent1, #opponent2, #opponent3 {
     width: 120px;
     height: 160px;
-    background-color: #fff;
     border-radius: 10px;
     display: flex;
     flex-direction: row;
@@ -111,7 +110,6 @@ body {
 .community-cards {
     width: 400px;
     height: 100px;
-    background-color: #fff;
     border-radius: 10px;
     display: flex;
     margin-left: 40px;
@@ -119,7 +117,6 @@ body {
 }
 
 .deck, .pot, .action-box {
-    background-color: #fff;
     border-radius: 10px;
     display: flex;
     justify-content: center;
@@ -151,7 +148,6 @@ body {
     transform: translateX(-50%);
     width: 200px;
     height: 160px;
-    background-color: #fff;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
