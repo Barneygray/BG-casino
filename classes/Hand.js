@@ -65,7 +65,7 @@ export class Hand {
         }
     }
 
-    cardAnimationPoker(newCardDiv, playerID) {
+    async cardAnimationPoker(newCardDiv, playerID) {
         const cardBack = document.createElement('div')
         const movingCard = newCardDiv.cloneNode(true);
 
@@ -110,7 +110,7 @@ export class Hand {
         } 
     }
 
-    addCardHTML(card, playerID, hand, game) {
+    async addCardHTML(card, playerID, hand, game) {
         const newCardDiv = document.createElement('div')
         newCardDiv.classList.add('card')
         if (['♣', '♠'].includes(card.suit)) {
@@ -138,14 +138,14 @@ export class Hand {
         if (game === "blackjack") { 
             this.cardAnimationBlackJack(newCardDiv, playerID, hand)
         } else if (game === "poker") {
-            this.cardAnimationPoker(newCardDiv, playerID)
+            await this.cardAnimationPoker(newCardDiv, playerID)
         }
     }
 
     async addCard(card, playerID, hand, game) {
         this.cards.push(card)
         
-        this.addCardHTML(card, playerID, hand, game)
+        await this.addCardHTML(card, playerID, hand, game)
     }
 
     getPlayerTotal() {

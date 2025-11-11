@@ -6,16 +6,15 @@ import { Hand as PokerHand } from 'https://cdn.skypack.dev/pokersolver'
 
 export class PokerOpponent {
     id;
+    hand;
     constructor() {
         this.bet = 0;
-        this.hand = new Hand()
+        this.isFolded = false;
         this.isStillActive = true;
         this.isSmallBlind = false;
         this.isBigBlind = false;
         this.money=1000;
-        this.name = this.getName().then(name => {
-            this.name = '';
-        })
+        this.name = '';
     }
 
     async init() {
@@ -38,6 +37,7 @@ export class PokerOpponent {
             return data.results[0].name.first;
         } catch (error) {
             console.error('Error fetching data:', error)
+            return 'Unknown'
         }
     }
     monteCarloWinProbability(communityCards, numOpponents, iterations) {

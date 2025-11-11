@@ -126,7 +126,7 @@ body {
 .deck {
     width: 80px;
     height: 100px;
-    background-color: #0b3d0b;
+    padding-top: 40px;
 }
 
 .pot {
@@ -328,8 +328,8 @@ body {
 .name-box {
     position: absolute;
     top: 100%; /* Places it just below the parent */
-    left: 0;
-    width: 100%;
+    left: 40;
+    width: 200px;
     background: linear-gradient(135deg, #6a5acd, #836fff);
     colour: #fff;
     text-align: centre;
@@ -345,3 +345,23 @@ body {
     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
 }
 
+.home-button {
+  font-size: 3em;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  grid-area: home;
+
+  width: 60px;                
+  height: 60px;               
+  display: flex;               
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
