@@ -256,7 +256,10 @@ export class Poker {
         for (let player of this.turnOrder) {
             player.isBigBlind = false;
             player.isSmallBlind = false;
+            player.isFolded = false;
         }
+        this.updateFoldedPlayers();
+
         this.turnOrder.at(-1).makeBigBlind()
         this.turnOrder.at(-2).makeSmallBlind()
 
@@ -316,7 +319,7 @@ export class Poker {
     }
 
     updateFoldedPlayers() {
-        this.nonFoldedPlayers = this.nonFoldedPlayers.filter(player => !player.isFolded);
+        this.nonFoldedPlayers = this.turnOrder.filter(player => !player.isFolded);
     }
 
     async playerCall(currentPlayer) {
@@ -422,7 +425,7 @@ export class Poker {
                         await this.playerFold(currentPlayer)
                     }
                 } else {
-                    const oppAction = await currentPlayer.takeAction(this.currentBet, this.communityCards, this.nonFoldedPlayers.length - 1)
+                    const oppAction = await currentPlayer.takeAction(this.currentBet, this.communityCards, this.nonFoldedPlayers.length - 1, this.pot, )
                     if (oppAction === "Call") {
                         await this.cpuCall(currentPlayer)
                     } else if (oppAction.includes("Raise")) {
@@ -494,8 +497,15 @@ export class Poker {
         this.revealWinner(winners, winningPlayers)
     }
 
+    showCards() {
+        const cardBacks = document.querySelectorAll('#dealer-card-back');
+        cardBacks.forEach(card => card.remove())
+    }
+
     async revealWinner(winners, winningPlayers) {
         const winningHandDescription = winners[0].descr
+
+        this.showCards()
 
         if (winningPlayers.length > 1) {
             await this.displayText("Tie! " + winningHandDescription)

@@ -60,8 +60,22 @@ body {
     justify-content: space-between;
     padding: 10px;
     text-align: center;
-
+    gap: 40px;
+    
 }
+
+
+#opponent1 .card:nth-child(3) { transform: rotate(-5deg); margin-left:0px;}
+#opponent1 .card:nth-child(4) { transform: rotate(5deg); }
+
+
+#opponent2 .card:nth-child(3) { transform: rotate(-5deg); margin-left: 0px;}
+#opponent2 .card:nth-child(4) { transform: rotate(5deg); }
+
+
+#opponent3 .card:nth-child(3) { transform: rotate(-5deg); margin-left: 0px;}
+#opponent3 .card:nth-child(4) { transform: rotate(5deg); }
+
 
 /* Positioning Opponents */
 #opponent1 {
@@ -160,8 +174,14 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 40px;
+    gap: 35px;
 }
+
+
+.player-hand .card:nth-child(1) { transform: rotate(-5deg); margin-left: 0px;}
+.player-hand .card:nth-child(2) { transform: rotate(5deg); }
+
+
 
 .card {
     width: 80px;
@@ -181,8 +201,9 @@ body {
     padding: 5px;
     transform: translateX(50px);
     position: relative;
-    transition: transform 1s ease-in-out;
+    transition: transform 1s ea
 }
+
 
 .red-card {
     color: crimson;
@@ -364,4 +385,13 @@ body {
   justify-content: center;
   align-items: center;
   z-index: 9999;
+}
+
+
+#opponent1 .card,
+#opponent2 .card,
+#opponent3 .card,
+.player-hand .card {
+    transform-origin: bottom centre;
+    transition: transform 0.5s ease;
 }
