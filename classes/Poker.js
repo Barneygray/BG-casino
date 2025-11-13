@@ -34,6 +34,7 @@ export class Poker {
         this.bigBlind = 40;
         this.whosTurn = 0;
         this.pot = 0;
+        this.roundPot = 0;
         this.currentBet = 0;
     }
     async createPromptNumResponse(prompt) {
@@ -239,6 +240,7 @@ export class Poker {
         const playerBet = document.getElementById(player.name)
         playerBet.textContent = 'Current Bet: £' + player.bet
         player.money -= player.bet
+        this.roundPot += player.bet
         this.updatePlayerHTML(player, player.name)
     }
 
@@ -247,6 +249,7 @@ export class Poker {
         const playerBet = document.getElementById(player.name)
         playerBet.textContent = 'Current Bet: £' + player.bet
         player.money -= player.bet
+        this.roundPot += player.bet
         this.updatePlayerHTML(player, player.name)
     }
 
@@ -296,14 +299,24 @@ export class Poker {
 
     updatePot() {
         for (let player of this.activePlayers) {
-            this.pot += player.bet 
-            
             player.bet = 0;
             this.updatePlayerHTML(player, player.name)
         }
+        this.pot += this.roundPot
+        this.roundPot = 0
+        const roundPotText = document.getElementById("round-pot")
+        roundPotText.innerHTML = "Round Pot: £0"
+
         const potText = document.getElementById("pot-text")
         potText.innerHTML = "Pot: £" + String(this.pot)
         this.currentBet = 0;
+    }
+
+    updateRoundPot(amount) {
+        this.roundPot += amount
+
+        const potText = document.getElementById("round-pot")
+        potText.innerHTML = "Round Pot: £" + String(this.roundPot)
     }
 
     updatePlayerHTML(player, id) {
@@ -327,6 +340,7 @@ export class Poker {
         const callDifference = this.currentBet - currentPlayer.bet
         currentPlayer.bet = this.currentBet;
         currentPlayer.money -= callDifference
+        this.updateRoundPot(callDifference)
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
     }
 
@@ -337,7 +351,10 @@ export class Poker {
         this.bettingComplete = false;
         currentPlayer.bet = this.currentBet;
         currentPlayer.money -= raiseAmount ;
+        this.updateRoundPot(raiseAmount)
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
+
+        this.raiseOccurred = true;
 }
 
     async playerFold(currentPlayer) {
@@ -363,6 +380,7 @@ export class Poker {
         currentPlayer.bet = this.currentBet;
         await this.displayText(currentPlayer.name + " calls.")
         currentPlayer.money -= callDifference
+        this.updateRoundPot(callDifference)
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
     }
 
@@ -372,7 +390,10 @@ export class Poker {
         this.bettingComplete = false;
         await this.displayText(currentPlayer.name + " raises " + String(parseInt(oppAction.match(/\d+/g))))
         currentPlayer.money -= parseInt(oppAction.match(/\d+/g));
+        this.updateRoundPot(parseInt(oppAction.match(/\d+/g)))
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
+
+        this.raiseOccurred = true;
     }
 
     async cpuCheck(currentPlayer) {
@@ -397,16 +418,51 @@ export class Poker {
         return this.nonFoldedPlayers.length === 1
     }
 
+    async executeCPUAction(oppAction, currentPlayer, i) {
+        if (oppAction === "Check" ||oppAction === "Raise0.00" && currentPlayer.bet === this.currentBet|| oppAction === "Call" && currentPlayer.bet === this.currentBet) {
+            await this.cpuCheck(currentPlayer)
+            this.pendingPlayers = this.pendingPlayers.filter(p => p !== currentPlayer);
+        } else if (oppAction === "Call" || oppAction === "Raise0.00") {
+            await this.cpuCall(currentPlayer)
+            this.pendingPlayers = this.pendingPlayers.filter(p => p !== currentPlayer);
+        } else if (oppAction.includes("Raise")) {
+            await this.cpuRaise(currentPlayer, oppAction)
+            this.pendingPlayers = this.nonFoldedPlayers.filter(p => p !== currentPlayer);
+            this.restartLoop = true;
+        } else if (oppAction === "Fold") {
+            await this.cpuFold(currentPlayer)
+            this.pendingPlayers = this.pendingPlayers.filter(p => p !== currentPlayer);
+        }
+    }
+
+    async executePlayerAction(action, currentPlayer, i) {
+        if (action === "Call") {
+            await this.playerCall(currentPlayer)
+            this.pendingPlayers = this.pendingPlayers.filter(p => p !== currentPlayer);
+        } else if (action === "Raise") {
+            await this.playerRaise(currentPlayer)
+            this.pendingPlayers = this.nonFoldedPlayers.filter(p => p !== currentPlayer);
+            this.restartLoop = true;
+        } else if (action === "Fold") {
+            await this.playerFold(currentPlayer)
+            this.pendingPlayers = this.pendingPlayers.filter(p => p !== currentPlayer);
+        }
+    }
     async bettingRound() {
-        console.log(this.turnOrder)
         this.bettingComplete = false;
+        this.lastAggressorIndex = null;
+
+        this.pendingPlayers = this.nonFoldedPlayers.slice()
+
         while (!this.bettingComplete) {
-            this.bettingComplete = true;
+            this.raiseOccurred = false;
+            this.restartLoop = false;
 
             for (let i = 0; i < this.turnOrder.length; i++) {
                 const currentPlayer = this.turnOrder[i]
 
                 if (currentPlayer.isFolded) continue
+                if (!this.pendingPlayers.includes(currentPlayer)) continue
 
                 if(currentPlayer === this.player) {
                     
@@ -417,31 +473,39 @@ export class Poker {
                         action = await this.createPromptButtonResponse("Your turn:", "Check", "Raise", "Fold");
                     }
 
-                    if (action === "Call") {
-                        await this.playerCall(currentPlayer)
-                    } else if (action === "Raise") {
-                        await this.playerRaise(currentPlayer)
-                    } else if (action === "Fold") {
-                        await this.playerFold(currentPlayer)
-                    }
+                    await this.executePlayerAction(action, currentPlayer, i)
+
                 } else {
                     const oppAction = await currentPlayer.takeAction(this.currentBet, this.communityCards, this.nonFoldedPlayers.length - 1, this.pot, )
-                    if (oppAction === "Call") {
-                        await this.cpuCall(currentPlayer)
-                    } else if (oppAction.includes("Raise")) {
-                        await this.cpuRaise(currentPlayer, oppAction)
-                    } else if (oppAction === "Fold") {
-                        await this.cpuFold(currentPlayer)
-                    } else {
-                        await this.cpuCheck(currentPlayer)
-                    }
+                    await this.executeCPUAction(oppAction, currentPlayer, i)
                 }
 
                 this.updateFoldedPlayers()
-                this.bettingComplete = this.nonFoldedPlayers.every(p => p.isFolded || p.bet === this.currentBet)
+
+                if (this.nonFoldedPlayers.length <= 1) {
+                    this.bettingComplete = true;
+                    break;
+                }
+                
+
+                if (this.pendingPlayers.length === 0) {
+                    this.bettingComplete = true; // Everyone acted after last raise
+                    break;
+                }
             }
+
+        if (!this.raiseOccurred) {
+            this.bettingComplete = true;
         }
-        this.updateFoldedPlayers()
+
+
+        if (this.restartLoop && !this.bettingComplete) {
+            continue; // Restart while loop for new betting cycle
+        }
+
+
+        }
+        
         this.updatePot()
     }
 

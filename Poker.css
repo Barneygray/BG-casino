@@ -16,8 +16,8 @@ body {
 
 .room {
     position: relative;
-    width: 1000px;
-    height: 700px;
+    width: 1200px;
+    height: 840px;
     background-color: #145214;
     border-radius: 50%;
     display: flex;
@@ -52,7 +52,7 @@ body {
 }
 
 #opponent1, #opponent2, #opponent3 {
-    width: 120px;
+    width: 180px;
     height: 160px;
     border-radius: 10px;
     display: flex;
@@ -110,15 +110,17 @@ body {
 
 /* Table Area */
 .table {
-    width: 600px;
-    height: 300px;
+    width: 720px;
+    height: 360px;
     background-color: #0b3d0b;
     border-radius: 150px;
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-around;
+    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 30px;
+    gap: 30px;
 }
 
 .community-cards {
@@ -128,7 +130,18 @@ body {
     display: flex;
     margin-left: 40px;
     gap: 100px;
+    margin-bottom: 60px;
 }
+
+
+.community-cards .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.community-cards .card:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
 
 .deck, .pot, .action-box {
     border-radius: 10px;
@@ -140,18 +153,29 @@ body {
 .deck {
     width: 80px;
     height: 100px;
-    padding-top: 40px;
 }
 
 .pot {
     width: 80px;
     height: 80px;
+
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(6px);
+    border-radius: 8px;
+    padding: 10px;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+
 }
 
 .action-box {
     width: 300px;
     height: 50px;
     margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
 }
 
 /* Player Area */
@@ -201,8 +225,15 @@ body {
     padding: 5px;
     transform: translateX(50px);
     position: relative;
-    transition: transform 1s ea
+    transition: transform 1s ea;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
+
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(255,255,255,0.4);
+}
+
 
 
 .red-card {
@@ -302,7 +333,7 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 
-    background-color: #e74c3c; /* red */
+    background-color: #3498db; /* red */
     color: #fff;
     z-index: 9999;
 }
@@ -327,8 +358,12 @@ body {
 .first-button:hover,
 .second-button:hover,
 .third-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    font-size: 1.1em;
+    padding: 10px 20px;
+
 }
 
 .input-box {
@@ -352,12 +387,13 @@ body {
     left: 40;
     width: 200px;
     background: linear-gradient(135deg, #6a5acd, #836fff);
-    colour: #fff;
-    text-align: centre;
+    color: #fff;
+    text-align: center;
     padding: 8px 12px;
     border-radius: 6px;
     font-weight: bold;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 

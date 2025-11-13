@@ -131,7 +131,7 @@ export class PokerOpponent {
     }
  
     async takeAction(currentBet, communityCards, numOpponents, potSize, position) {
-        const winProb = this.monteCarloWinProbability(communityCards, numOpponents, 10000); // returns fraction now
+        const winProb = this.monteCarloWinProbability(communityCards, numOpponents, 5000);
         const callCost = currentBet - this.bet;
         const stackSize = this.money;
         const raiseAmount = this.calcRaiseAmount(stackSize, potSize);
@@ -142,6 +142,7 @@ export class PokerOpponent {
         if (callCost <= 0) {
             // Check if strong enough to raise instead of check
             if (winProb > this.aggressionThreshold(numOpponents) && stackSize > raiseAmount) {
+                console.log(`Raise${raiseAmount.toFixed(2)}`)
                 return `Raise${raiseAmount.toFixed(2)}`;
             }
             return 'Check';
@@ -163,6 +164,7 @@ export class PokerOpponent {
 
         // ✅ 4. Bluff raise if conditions met
         if (this.shouldBluff(stackSize, raiseAmount, winProb) && this.shortStack(stackSize, potSize)) {
+            console.log(`Raise${raiseAmount.toFixed(2)}`)
             return `Raise${raiseAmount.toFixed(2)}`;
         }
 
@@ -177,6 +179,7 @@ export class PokerOpponent {
             if (this.deepStack(stackSize, potSize) && winProb > 0.75) {
                 return `All-in (${stackSize.toFixed(2)})`;
             }
+            console.log(`Raise${raiseAmount.toFixed(2)}`)
             return `Raise${raiseAmount.toFixed(2)}`;
         }
 

@@ -66,48 +66,53 @@ export class Hand {
     }
 
     async cardAnimationPoker(newCardDiv, playerID) {
-        const cardBack = document.createElement('div')
-        const movingCard = newCardDiv.cloneNode(true);
+        return new Promise((resolve) => {
+            const cardBack = document.createElement('div')
+            const movingCard = newCardDiv.cloneNode(true);
 
-        cardBack.classList.add('card-back')
-        cardBack.id = "dealer-card-back"
-        movingCard.appendChild(cardBack)
-        document.body.appendChild(movingCard);
+            cardBack.classList.add('card-back')
+            cardBack.id = "dealer-card-back"
+            movingCard.appendChild(cardBack)
+            document.body.appendChild(movingCard);
 
-        const deckRect = deckHTML.getBoundingClientRect();
-        
-        movingCard.style.position = 'absolute';
-        movingCard.style.left = `${deckRect.left-100}px`;
-        movingCard.style.top = `${deckRect.top}px`;            
-        movingCard.style.margin = '0'; // override margin
-        movingCard.style.transform = 'none'; // reset transform
-        movingCard.style.transition = 'transform 0.8s ease-in-out';
+            const deckRect = deckHTML.getBoundingClientRect();
+            
+            movingCard.style.position = 'absolute';
+            movingCard.style.left = `${deckRect.left-100}px`;
+            movingCard.style.top = `${deckRect.top}px`;            
+            movingCard.style.margin = '0'; // override margin
+            movingCard.style.transform = 'none'; // reset transform
+            movingCard.style.transition = 'transform 0.8s ease-in-out';
 
-        if (["opponent1", "opponent2", "opponent3"].includes(playerID)) {
-            const opponentHandDiv = document.getElementById(playerID)
-            setTimeout(() => this.moveCard(opponentHandDiv, movingCard, deckRect, true), 100)
-            setTimeout (() => {
-                movingCard.remove();
-                cardBack.classList.add('card-back')
-                cardBack.id = "dealer-card-back"
-                newCardDiv.appendChild(cardBack)
-                opponentHandDiv.appendChild(newCardDiv)
-            }, 800)
-        } else if (playerID === "community") {
-           const communityCardDiv = document.querySelector('.community-cards') 
-           setTimeout(() => this.moveCard(communityCardDiv, movingCard, deckRect), 100)
-            setTimeout(() => {
-                movingCard.remove()
-                communityCardDiv.appendChild(newCardDiv)
-            }, 800)
-        } else {
-            const playerHandDiv = document.querySelector('.player-hand')
-            setTimeout(() => this.moveCard(playerHandDiv, movingCard, deckRect), 100)
-            setTimeout(() => {
-                movingCard.remove()
-                playerHandDiv.appendChild(newCardDiv)
-            }, 800)
-        } 
+            if (["opponent1", "opponent2", "opponent3"].includes(playerID)) {
+                const opponentHandDiv = document.getElementById(playerID)
+                setTimeout(() => this.moveCard(opponentHandDiv, movingCard, deckRect, true), 100)
+                setTimeout (() => {
+                    movingCard.remove();
+                    cardBack.classList.add('card-back')
+                    cardBack.id = "dealer-card-back"
+                    newCardDiv.appendChild(cardBack)
+                    opponentHandDiv.appendChild(newCardDiv);
+                    resolve()
+                }, 800)
+            } else if (playerID === "community") {
+            const communityCardDiv = document.querySelector('.community-cards') 
+            setTimeout(() => this.moveCard(communityCardDiv, movingCard, deckRect), 100)
+                setTimeout(() => {
+                    movingCard.remove()
+                    communityCardDiv.appendChild(newCardDiv)
+                    resolve()
+                }, 800)
+            } else {
+                const playerHandDiv = document.querySelector('.player-hand')
+                setTimeout(() => this.moveCard(playerHandDiv, movingCard, deckRect), 100)
+                setTimeout(() => {
+                    movingCard.remove()
+                    playerHandDiv.appendChild(newCardDiv)
+                    resolve()
+                }, 800)
+            } 
+        });
     }
 
     async addCardHTML(card, playerID, hand, game) {
@@ -139,6 +144,7 @@ export class Hand {
             this.cardAnimationBlackJack(newCardDiv, playerID, hand)
         } else if (game === "poker") {
             await this.cardAnimationPoker(newCardDiv, playerID)
+            await new Promise(resolve => setTimeout(resolve, 50));
         }
     }
 
