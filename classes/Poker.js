@@ -8,6 +8,16 @@ const opp3Hand = document.querySelector('.opponent3')
 
 const playerNameBox = document.getElementById('p-name')
 
+
+const btn = document.querySelector('.dropdown-btn');
+const content = document.querySelector('.dropdown-content');
+
+btn.addEventListener('click', () => {
+    content.classList.toggle('show');
+});
+
+
+
 import { Hand as PokerHand } from 'https://cdn.skypack.dev/pokersolver'
 
 
@@ -37,7 +47,7 @@ export class Poker {
         this.roundPot = 0;
         this.currentBet = 0;
     }
-    async createPromptNumResponse(prompt) {
+    async createPromptNumResponse(prompt, type) {
         const promptText = document.createElement('p')
         promptText.textContent = prompt
         promptText.className = "prompt-text"
@@ -57,14 +67,24 @@ export class Poker {
                     const input = e.target.value;
                     const i = e.target;
                     const value = i.value.trim();
-
-                    if (/^\d+$/.test(value)) {
-                        resolve(input)
+                    if (type === 1) {
+                        if (/^\d+$/.test(value) && value >= 1 && value <= 3) {
+                            resolve(input)
+                        } else {
+                            actionBoxDiv.classList.add("shake")
+                            setTimeout(() => {
+                                actionBoxDiv.classList.remove("shake")
+                            }, 300)
+                        }
                     } else {
-                        actionBoxDiv.classList.add("shake")
-                        setTimeout(() => {
-                            actionBoxDiv.classList.remove("shake")
-                        }, 300)
+                        if (/^\d+$/.test(value) && value > 0 && value <= type.money) {
+                            resolve(input)
+                        } else {
+                            actionBoxDiv.classList.add("shake")
+                            setTimeout(() => {
+                                actionBoxDiv.classList.remove("shake")
+                            }, 300)
+                        }
                     }
                 }
             })
@@ -167,7 +187,7 @@ export class Poker {
     }
 
     async askNumberOfPlayers() {
-        this.numOpponents = await this.createPromptNumResponse("How many Opponents? (1-3):");
+        this.numOpponents = await this.createPromptNumResponse("How many Opponents? (1-3):", 1);
         await this.opponentsSetUp()
     }
 
@@ -252,8 +272,13 @@ export class Poker {
         this.roundPot += player.bet
         this.updatePlayerHTML(player, player.name)
     }
+    removeInactivePlayers() {
+        this.activePlayers = this.activePlayers.filter(player => player.isStillActive);
+        this.turnOrder = this.turnOrder.filter(player => player.isStillActive);
+    }
 
     initializeRound() {
+        this.removeInactivePlayers()
         this.establishTurnOrder()
 
         for (let player of this.turnOrder) {
@@ -321,7 +346,7 @@ export class Poker {
 
     updatePlayerHTML(player, id) {
         const betText = document.getElementById(id)
-        betText.textContent = "Current Bet: " + String(player.bet)
+        betText.textContent = "Current Bet: £" + String(player.bet)
 
 
         const totalText = document.getElementById(player.name + "-balance")
@@ -345,13 +370,15 @@ export class Poker {
     }
 
     async playerRaise(currentPlayer) {
-        const raiseAmount = Number(await this.createPromptNumResponse("Raise Amount:"));
+        const raiseAmount = Number(await this.createPromptNumResponse("Raise Amount:", currentPlayer));
         await this.displayText("Raise £" + String(raiseAmount))
-        this.currentBet = raiseAmount + currentPlayer.bet;
+
+        this.currentBet = raiseAmount + this.currentBet;
         this.bettingComplete = false;
-        currentPlayer.bet = this.currentBet;
-        currentPlayer.money -= raiseAmount ;
-        this.updateRoundPot(raiseAmount)
+        currentPlayer.money -= this.currentBet - currentPlayer.bet
+        this.updateRoundPot(this.currentBet - currentPlayer.bet)
+        currentPlayer.bet = this.currentBet;  
+
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
 
         this.raiseOccurred = true;
@@ -385,12 +412,15 @@ export class Poker {
     }
 
     async cpuRaise(currentPlayer, oppAction) {
-        this.currentBet += parseInt(oppAction.match(/\d+/g))
-        currentPlayer.bet = this.currentBet
-        this.bettingComplete = false;
+        const raiseAmount = parseInt(oppAction.match(/\d+/g))
         await this.displayText(currentPlayer.name + " raises " + String(parseInt(oppAction.match(/\d+/g))))
-        currentPlayer.money -= parseInt(oppAction.match(/\d+/g));
-        this.updateRoundPot(parseInt(oppAction.match(/\d+/g)))
+        this.currentBet = parseInt(oppAction.match(/\d+/g)) + this.currentBet
+
+        this.bettingComplete = false;
+        currentPlayer.money -= this.currentBet  - currentPlayer.bet
+        this.updateRoundPot(this.currentBet - currentPlayer.bet)
+        currentPlayer.bet = this.currentBet
+
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
 
         this.raiseOccurred = true;
@@ -510,20 +540,29 @@ export class Poker {
     }
 
     async dealFlop() {
-        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
-        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
-        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker", 0)
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker", 1)
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker", 2)
     }
 
     async dealTurn() {
-        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker", 3)
     }
 
     async dealRiver() {
-        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker")
+        await this.communityCards.addCard(this.deck.drawCard(), "community", 1, "poker", 4)
+    }
+
+    checkForPlayerOut() {
+        for (let player of this.activePlayers) {
+            if (player.money === 0) {
+                player.isStillActive = false;
+            }
+        }
     }
 
     checkForAutoWin() {
+        this.checkForPlayerOut()
         if (this.nonFoldedPlayers.length === 1) {
             const winner = this.nonFoldedPlayers[0];
             winner.money += this.pot;
@@ -536,6 +575,7 @@ export class Poker {
     }
 
     determineWinner() {
+        this.checkForPlayerOut()
         // show all players cards
         let remainingHandsSolved = []
         for (let player of this.nonFoldedPlayers) {

@@ -11,7 +11,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    /*height: 100vh; */
+    flex-direction: column;
+    gap: 60px;
 }
 
 .room {
@@ -275,8 +277,8 @@ body {
     max-height: 60%;
     object-fit: contain;
     position: absolute;
-    top: 55px;
-    left: 15px;
+    top: 40px;
+    left: 10px;
 }
 
 .card-back {
@@ -430,4 +432,99 @@ body {
 .player-hand .card {
     transform-origin: bottom centre;
     transition: transform 0.5s ease;
+}
+
+
+.hand-rankings {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+/* Dropdown button styling */
+.dropdown-btn {
+    background-color: #2c3e50; /* dark blue-grey */
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.dropdown-btn:hover {
+    background-color: #34495e; /* slightly lighter on hover */
+}
+
+/* Dropdown content container */
+.dropdown-content {
+    display: none; /* hidden by default */
+    flex-direction: column;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-top: 10px;
+    width: 90%;
+    max-width:100%;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    max-height: 500px; /* scroll if too tall */
+}
+
+/* Show dropdown when active (toggle via JS) */
+.dropdown-content.show {
+    display: flex;
+}
+
+/* List styling */
+.dropdown-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown-content li {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 15px;
+}
+
+/* Hand name styling */
+.dropdown-content h1 {
+    font-size: 18px;
+    margin-top: 10px;
+    text-align: center;
+    color: #2c3e50;
+}
+
+/* Card container inside each hand */
+.dropdown-content li div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+
+.dropdown-row {
+    display: flex;              /* Arrange items in a row */
+    flex-wrap: wrap;          /* Prevent wrapping to next line */
+    justify-content: center;    /* Centre the cards horizontally */
+    align-items: center;        /* Align cards vertically */
+    gap: 10px;                  /* Space between cards */
+    padding: 10px;
+}
+
+
+.dropdown-content .card {
+    margin-left: 0;        /* Remove negative margin */
+    transform: none;       /* Remove horizontal shift */
 }
