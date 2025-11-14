@@ -256,7 +256,7 @@ export class Poker {
     }
 
     updateBigBlind(player) {
-        player.bet = this.bigBlind
+        player.bet = Math.min(this.bigBlind,player.money)
         const playerBet = document.getElementById(player.name)
         playerBet.textContent = 'Current Bet: £' + player.bet
         player.money -= player.bet
@@ -265,7 +265,7 @@ export class Poker {
     }
 
     updateSmallBlind(player) {
-        player.bet = this.smallBlind
+        player.bet = Math.min(this.smallBlind, player.money)
         const playerBet = document.getElementById(player.name)
         playerBet.textContent = 'Current Bet: £' + player.bet
         player.money -= player.bet
