@@ -15,6 +15,7 @@ export class PokerOpponent {
         this.isBigBlind = false;
         this.money=1000;
         this.name = '';
+        this.aggressionFactor = Math.random();
     }
 
     async init() {
@@ -92,10 +93,6 @@ export class PokerOpponent {
         return (winProb * (potSize+raiseAmount)) - ((1 - winProb) * raiseAmount)
     }
 
-    aggressionFactor() {
-        return 1.0
-    }
-
     positionFactor(position) {
         if (position === 3) return 1.2;
         if (position === 0) return 0.8;
@@ -115,7 +112,7 @@ export class PokerOpponent {
     }
 
     bluffChance(winProb) {
-        return (1-winProb) * this.aggressionFactor() * 0.3
+        return (1-winProb) * this.aggressionFactor * 0.3;
     }
 
     shouldBluff(stackSize, raiseAmount, winProb) {
@@ -126,25 +123,36 @@ export class PokerOpponent {
         return 0.55 * this.positionFactor() * this.multiWayPenalty(opponentCount)
     }
 
+    
     calcOptimalRaiseAmount(winProb, stackSize, potSize) {
-        let bestRaise = potSize * 0.25;;
-        let bestScore = -Infinity;
-
         const minRaise = potSize * 0.25;
-        const maxRaise = Math.min(stackSize, potSize * (1 + this.aggressionFactor() * 0.5));
-        const step = (maxRaise - minRaise) / 1000;
+        const maxRaise = Math.min(stackSize, potSize * (1 + this.aggressionFactor * 0.5));
+        const phi = (1 + Math.sqrt(5)) / 2; // golden ratio
+        let a = minRaise, b = maxRaise;
+        let c = b - (b - a) / phi;
+        let d = a + (b - a) / phi;
 
-        for (let raise = minRaise; raise <= maxRaise; raise += step) {
+        const score = (raise) => {
             const ev = this.calcExpectedValueRaise(winProb, potSize, raise);
-            const riskPenalty = (raise / stackSize) * 0.3;
-            const score = ev - riskPenalty;
-            if (score > bestScore) {
-                bestScore = score;
-                bestRaise = raise;
+            const riskPenalty = (raise / stackSize) * (1 - winProb);
+            return ev - riskPenalty;
+        };
+
+        while (Math.abs(b - a) > 1) {
+            if (score(c) > score(d)) {
+                b = d;
+                d = c;
+                c = b - (b - a) / phi;
+            } else {
+                a = c;
+                c = d;
+                d = a + (b - a) / phi;
             }
         }
-        return bestRaise;
+
+        return (a + b) / 2;
     }
+
  
     async takeAction(currentBet, communityCards, numOpponents, potSize, position) {
         const winProb = this.monteCarloWinProbability(communityCards, numOpponents, 5000);
@@ -200,6 +208,7 @@ export class PokerOpponent {
                 console.log("Very Strong Hand, Deep Stack, All in")
                 return `Raise${stackSize}`;
             }
+            
             console.log("Strong Hand, Raise")
             return `Raise${raiseAmount}`;
         }
