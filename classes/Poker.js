@@ -78,7 +78,7 @@ export class Poker {
                             }, 300)
                         }
                     } else {
-                        if (/^\d+$/.test(value) && value > 0 && value <= type.money - currentCallDifference - type.bet) {
+                        if (/^\d+$/.test(value) && value > 0 && value <= type.money - currentCallDifference - type.bet && value >= this.bigBlind) {
                             resolve(input)
                         } else {
                             actionBoxDiv.classList.add("shake")
@@ -365,11 +365,19 @@ export class Poker {
     async playerCall(currentPlayer) {
         await this.displayText("Call")
         const callDifference = this.currentBet - currentPlayer.bet
-        currentPlayer.bet = this.currentBet;
-        currentPlayer.money -= callDifference
-        currentPlayer.contributionMainPot += callDifference;
-        this.updatePot(callDifference)
-        this.updatePlayerHTML(currentPlayer, currentPlayer.name)
+
+        if (callDifference > currentPlayer.money) {
+            currentPlayer.contributionMainPot += currentPlayer.money;
+            this.updatePot(currentPlayer.money)
+            currentPlayer.money = 0;
+            this.updateSidePot(currentPlayer)
+        } else {
+            currentPlayer.bet = this.currentBet;
+            currentPlayer.money -= callDifference
+            currentPlayer.contributionMainPot += callDifference;
+            this.updatePot(callDifference)
+            this.updatePlayerHTML(currentPlayer, currentPlayer.name)
+        }
     }
 
     async playerRaise(currentPlayer) {
@@ -424,6 +432,7 @@ export class Poker {
     }
 
     async cpuCall(currentPlayer) {
+        await this.displayText(currentPlayer.name + " calls.")
         const callDifference = this.currentBet - currentPlayer.bet
 
         if (callDifference > currentPlayer.money) {
@@ -433,7 +442,6 @@ export class Poker {
             this.updateSidePot(currentPlayer)
         } else {
             currentPlayer.bet = this.currentBet;
-            await this.displayText(currentPlayer.name + " calls.")
             currentPlayer.money -= callDifference
             currentPlayer.contributionMainPot += callDifference;
 
@@ -537,8 +545,10 @@ export class Poker {
                 if(currentPlayer === this.player) {
                     
                     let action;
-                    if (currentPlayer.bet !== this.currentBet) {
+                    if (currentPlayer.bet !== this.currentBet && this.currentBet - currentPlayer.bet < currentPlayer.money) {
                         action = await this.createPromptButtonResponse("Your turn:", "Call", "Raise", "Fold");
+                    } else if (currentPlayer.bet != this.currentBet) {
+                        action = await this.createPromptButtonResponse("Your turn:", "Call", "Fold");
                     } else {
                         action = await this.createPromptButtonResponse("Your turn:", "Check", "Raise", "Fold");
                     }
