@@ -48,7 +48,7 @@ export class Poker {
         this.currentBet = 0;
         this.sidePot = 0;
     }
-    async createPromptNumResponse(prompt, type) {
+    async createPromptNumResponse(prompt, type, currentCallDifference=0) {
         const promptText = document.createElement('p')
         promptText.textContent = prompt
         promptText.className = "prompt-text"
@@ -78,7 +78,7 @@ export class Poker {
                             }, 300)
                         }
                     } else {
-                        if (/^\d+$/.test(value) && value > 0 && value <= type.money) {
+                        if (/^\d+$/.test(value) && value > 0 && value <= type.money - currentCallDifference - type.bet) {
                             resolve(input)
                         } else {
                             actionBoxDiv.classList.add("shake")
@@ -291,9 +291,11 @@ export class Poker {
             player.isBigBlind = false;
             player.isSmallBlind = false;
             player.isFolded = false;
+            player.contributionMainPot = 0;
+            player.contributionSidePot = 0;
         }
         this.updateFoldedPlayers();
-
+        document.getElementById('side-pot').textContent = ""
         this.turnOrder.at(-1).makeBigBlind()
         this.turnOrder.at(-2).makeSmallBlind()
 
@@ -371,7 +373,7 @@ export class Poker {
     }
 
     async playerRaise(currentPlayer) {
-        const raiseAmount = Number(await this.createPromptNumResponse("Raise Amount:", currentPlayer));
+        const raiseAmount = Number(await this.createPromptNumResponse("Raise Amount:", currentPlayer, this.currentBet - currentPlayer.bet));
         await this.displayText("Raise £" + String(raiseAmount))
 
         this.currentBet = raiseAmount + this.currentBet;
@@ -418,7 +420,7 @@ export class Poker {
                 player.contributionMainPot = allInAmount;
             }
         }    
-        document.getElementByID('side-pot').textContent = "Side Pot: £" + String(this.sidePot)
+        document.getElementById('side-pot').textContent = "Side Pot: £" + String(this.sidePot)
     }
 
     async cpuCall(currentPlayer) {
@@ -426,6 +428,7 @@ export class Poker {
 
         if (callDifference > currentPlayer.money) {
             currentPlayer.contributionMainPot += currentPlayer.money;
+            this.updatePot(currentPlayer.money)
             currentPlayer.money = 0;
             this.updateSidePot(currentPlayer)
         } else {
@@ -610,7 +613,7 @@ export class Poker {
         return false
     }
 
-    determineWinner() {
+    async determineWinner() {
         // show all players cards
         let remainingHandsSolved = []
         for (let player of this.nonFoldedPlayers) {
@@ -646,7 +649,7 @@ export class Poker {
             }
         }
 
-        this.revealWinner(winners, winningPlayers)
+        await this.revealWinner(winners, winningPlayers)
         this.checkForPlayerOut()
     }
 
@@ -750,7 +753,7 @@ export class Poker {
         await this.bettingRound(); 
         if (this.checkForAutoWin()) return;
 
-        this.determineWinner()
+        await this.determineWinner()
     }
 
     async play() {
@@ -762,8 +765,9 @@ export class Poker {
 
         await this.playRound()
         
-        if (!this.player.isStllActive)
-        await this.playAgain()
+        if (this.player.isStillActive) {
+            await this.playAgain()
+        }
 
         this.restartGame()
     }
