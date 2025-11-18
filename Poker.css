@@ -178,6 +178,8 @@ body {
     display: flex;
     justify-content: center;
     gap: 15px;
+    color: #fff;
+    font-weight: bold;
 }
 
 /* Player Area */
@@ -229,11 +231,14 @@ body {
     position: relative;
     transition: transform 1s ea;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 1;
 }
 
 
-.card:hover {
-    box-shadow: 0 8px 16px rgba(255,255,255,0.4);
+.player-hand .card:hover {
+    transform: translateX(50px) scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    z-index: 10;
 }
 
 
