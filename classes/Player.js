@@ -2,7 +2,7 @@ export class Player {
     name;
     hand;
     constructor() {
-        this.money = 100;
+        this.money = 1000;
         this.moneyLeft = 1000;
         this.isStillActive = true;
         this.didSplit = false;
