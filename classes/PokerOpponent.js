@@ -13,7 +13,7 @@ export class PokerOpponent {
         this.isStillActive = true;
         this.isSmallBlind = false;
         this.isBigBlind = false;
-        this.money=1000;
+        this.money=100;
         this.name = '';
         this.aggressionFactor = Math.random();
         this.raiseCount = 0;

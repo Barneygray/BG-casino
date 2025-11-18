@@ -172,7 +172,7 @@ export class Poker {
 
     }
 
-    async displayText(prompt) {
+    async displayText(prompt, t=1000) {
         const promptText = document.createElement('p')
         promptText.textContent = prompt
         promptText.className = "prompt-text"
@@ -180,7 +180,7 @@ export class Poker {
         actionBoxDiv.innerHTML = ""
         actionBoxDiv.appendChild(promptText)
 
-        await new Promise (resolve => setTimeout(resolve, 500))
+        await new Promise (resolve => setTimeout(resolve, t))
     }
 
     async askPlayerName() {
@@ -293,6 +293,7 @@ export class Poker {
             player.isFolded = false;
             player.contributionMainPot = 0;
             player.contributionSidePot = 0;
+            this.sidePot = 0;
         }
         this.updateFoldedPlayers();
         document.getElementById('side-pot').textContent = ""
@@ -611,7 +612,6 @@ export class Poker {
     }
 
     checkForAutoWin() {
-        this.checkForPlayerOut()
         if (this.nonFoldedPlayers.length === 1) {
             const winner = this.nonFoldedPlayers[0];
             winner.money += this.pot;
@@ -641,6 +641,7 @@ export class Poker {
                 winningPlayers.push(player)
                 console.log(player.name)
                 const share = this.pot / winners.length
+
                 for (let player of winningPlayers) {
                     player.money += share;
                     this.updatePlayerHTML(player, player.name)
@@ -674,9 +675,9 @@ export class Poker {
         this.showCards()
 
         if (winningPlayers.length > 1) {
-            await this.displayText("Tie! " + winningHandDescription)
+            await this.displayText("Tie! " + winningHandDescription, 2500)
         } else {
-            await this.displayText(winningPlayers[0].name + " wins with a " + winningHandDescription)
+            await this.displayText(winningPlayers[0].name + " wins with a " + winningHandDescription, 2500)
         }
 
     }
