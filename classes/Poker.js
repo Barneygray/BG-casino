@@ -40,12 +40,13 @@ export class Poker {
         this.nonFoldedPlayers = [];
         this.turnOrder = [];
         this.player = new Player()
-        this.smallBlind = 20;
-        this.bigBlind = 40;
+        this.smallBlind = 10;
+        this.bigBlind = 20;
         this.whosTurn = 0;
         this.pot = 0;
         this.roundPot = 0;
         this.currentBet = 0;
+        this.sidePot = 0;
     }
     async createPromptNumResponse(prompt, type) {
         const promptText = document.createElement('p')
@@ -364,6 +365,7 @@ export class Poker {
         const callDifference = this.currentBet - currentPlayer.bet
         currentPlayer.bet = this.currentBet;
         currentPlayer.money -= callDifference
+        currentPlayer.contributionMainPot += callDifference;
         this.updatePot(callDifference)
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
     }
@@ -374,7 +376,10 @@ export class Poker {
 
         this.currentBet = raiseAmount + this.currentBet;
         this.bettingComplete = false;
+
         currentPlayer.money -= this.currentBet - currentPlayer.bet
+        currentPlayer.contributionMainPot += this.currentBet - currentPlayer.bet;
+
         this.updatePot(this.currentBet - currentPlayer.bet)
         currentPlayer.bet = this.currentBet;  
 
@@ -401,13 +406,37 @@ export class Poker {
         this.updatePlayerHTML(currentPlayer, currentPlayer.name)
     }
 
+    updateSidePot(allInPlayer) {
+        const allInAmount = allInPlayer.contributionMainPot;
+
+        for (let player of this.nonFoldedPlayers) {
+            if (player.contributionMainPot > allInAmount) {
+                const difference = player.contributionMainPot - allInAmount;
+
+                player.contributionSidePot += difference;
+                this.sidePot += difference;
+                player.contributionMainPot = allInAmount;
+            }
+        }    
+        document.getElementByID('side-pot').textContent = "Side Pot: £" + String(this.sidePot)
+    }
+
     async cpuCall(currentPlayer) {
         const callDifference = this.currentBet - currentPlayer.bet
-        currentPlayer.bet = this.currentBet;
-        await this.displayText(currentPlayer.name + " calls.")
-        currentPlayer.money -= callDifference
-        this.updatePot(callDifference)
-        this.updatePlayerHTML(currentPlayer, currentPlayer.name)
+
+        if (callDifference > currentPlayer.money) {
+            currentPlayer.contributionMainPot += currentPlayer.money;
+            currentPlayer.money = 0;
+            this.updateSidePot(currentPlayer)
+        } else {
+            currentPlayer.bet = this.currentBet;
+            await this.displayText(currentPlayer.name + " calls.")
+            currentPlayer.money -= callDifference
+            currentPlayer.contributionMainPot += callDifference;
+
+            this.updatePot(callDifference)
+            this.updatePlayerHTML(currentPlayer, currentPlayer.name)
+        }
     }
 
     async cpuRaise(currentPlayer, oppAction) {
@@ -417,6 +446,8 @@ export class Poker {
 
         this.bettingComplete = false;
         currentPlayer.money -= this.currentBet  - currentPlayer.bet
+        currentPlayer.contributionMainPot += this.currentBet  - currentPlayer.bet;
+
         this.updatePot(this.currentBet - currentPlayer.bet)
         currentPlayer.bet = this.currentBet
 
@@ -512,7 +543,7 @@ export class Poker {
                     await this.executePlayerAction(action, currentPlayer, i)
 
                 } else {
-                    const oppAction = await currentPlayer.takeAction(this.currentBet, this.communityCards, this.nonFoldedPlayers.length - 1, this.pot, this.smallBlind)
+                    const oppAction = await currentPlayer.takeAction(this.currentBet, this.communityCards, this.nonFoldedPlayers.length - 1, this.pot, this.bigBlind, this.turnOrder.indexOf(currentPlayer))
                     await this.executeCPUAction(oppAction, currentPlayer, i)
                 }
 
@@ -580,7 +611,6 @@ export class Poker {
     }
 
     determineWinner() {
-        this.checkForPlayerOut()
         // show all players cards
         let remainingHandsSolved = []
         for (let player of this.nonFoldedPlayers) {
@@ -597,13 +627,27 @@ export class Poker {
             if (winners.some(w => w.descr === solvedHand.descr)) {
                 winningPlayers.push(player)
                 console.log(player.name)
-                player.money += this.pot / winners.length
+                const share = this.pot / winners.length
+                for (let player of winningPlayers) {
+                    player.money += share;
+                    this.updatePlayerHTML(player, player.name)
+                }
                 this.pot = 0;
-                this.updatePlayerHTML(player, player.name)
+
+                const sideEligible = winningPlayers.filter(p => p.contributionSidePot > 0);
+                if (sideEligible.length > 0 && this.sidePot > 0) {
+                    const sideShare = this.sidePot / sideEligible.length;
+                    sideEligible.forEach(player => player.money += sideShare)
+                } else {
+                    const sideContributors = this.nonFoldedPlayers.filter(p => p.contributionSidePot > 0);
+                    const sideShare = this.sidePot / sideContributors.length;
+                    sideContributors.forEach(player => player.money += sideShare)
+                }
             }
         }
 
         this.revealWinner(winners, winningPlayers)
+        this.checkForPlayerOut()
     }
 
     showCards() {

@@ -17,6 +17,8 @@ export class PokerOpponent {
         this.name = '';
         this.aggressionFactor = Math.random();
         this.raiseCount = 0;
+        this.contributionMainPot = 0;
+        this.contributionSidePot = 0;
     }
 
     async init() {
@@ -82,153 +84,102 @@ export class PokerOpponent {
         return (wins / iterations)
     }
 
-    calcPotOdds(callCost, potSize) {
-        return callCost / (potSize + callCost)
-    }
-
-    calcExpectedValue(winProb, potSize, callCost) {
-        return (winProb * potSize) - ((1 - winProb) * callCost)
-    }
-
-    calcExpectedValueRaise(winProb, potSize, raiseAmount) {
-        return (winProb * (potSize+raiseAmount)) - ((1 - winProb) * raiseAmount)
-    }
-
-
-    shortStack(stackSize, potSize) {
-        return stackSize < potSize * 0.5;
-    }
-
-    deepStack(stackSize, potSize) {
-        return stackSize > potSize * 3;
-    }
-
-    multiWayPenalty(opponentCount) {
-        return opponentCount > 2 ? 0.85 : 1.0
-    }
-
-    bluffChance(winProb) {
-        return (1-winProb) * this.aggressionFactor * 0.3;
-    }
-
-    shouldBluff(stackSize, raiseAmount, winProb) {
-        return Math.random() < this.bluffChance(winProb) && stackSize > raiseAmount;
-    }
-
-    aggressionThreshold(opponentCount) {
-        return 0.55 * this.multiWayPenalty(opponentCount)
-    }
-
     
-    calcOptimalRaiseAmount(winProb, stackSize, potSize, minRaise) {
-        const maxRaise = Math.min(stackSize, potSize * (1 + this.aggressionFactor * 0.5));
-        const phi = (1 + Math.sqrt(5)) / 2; // golden ratio
-        let a = minRaise, b = maxRaise;
-        let c = b - (b - a) / phi;
-        let d = a + (b - a) / phi;
+    calculateRaiseAmount(position, bigBlind, stackSize, potSize, currentBet, winProb, callCost) {
+        const positionFactor = position === "late" ? 1.3 : position === "middle" ? 1.1 : 1.0;
+        const aggressionFactor = 1 + Math.random() * 0.4; // adds unpredictability (10–40%)
+        
+        // Base raise: 1.5–2.5x big blind, scaled by position and aggression
+        let raise = bigBlind * (1.5 + Math.random()) * positionFactor * aggressionFactor;
 
-        const score = (raise) => {
-            const ev = this.calcExpectedValueRaise(winProb, potSize, raise);
-            const riskPenalty = (raise / stackSize) * (1 - winProb);
-            return ev - riskPenalty;
-        };
+        // Add pot influence (bigger pots → bigger raises)
+        raise += potSize * winProb * 0.25;
 
-        while (Math.abs(b - a) > 1) {
-            if (score(c) > score(d)) {
-                b = d;
-                d = c;
-                c = b - (b - a) / phi;
-            } else {
-                a = c;
-                c = d;
-                d = a + (b - a) / phi;
-            }
-        }
-        let raise = (a + b) / 2;
-            
-        if (winProb <= 0.9 && winProb >= 0.75) {
-            raise *= 0.75;
-        } else if (winProb <= 0.9 && winProb >= 0.4) {
-            raise *= 0.5;
-        } else if (winProb < 0.4) {
-            raise *= 0.3;
+        // If facing a bet, raise relative to current bet
+        if (currentBet > 0) {
+            raise = currentBet * (2 + Math.random()); // 2x–3x the bet
         }
 
-        return Math.max(Math.min(stackSize, raise), minRaise)
-
+        // Cap raise to avoid all-in unless stack is short
+        raise = Math.min(raise, stackSize * 0.6); // max 60% of stack
+        return Math.round(raise - callCost);
     }
 
+    // Helper: Decide if bluffing
+    shouldBluff(stackSize, potSize, position) {
+        if (stackSize > potSize * 2 && position === "late") {
+            return Math.random() < 0.15; // 15% chance to bluff in late position
+        }
+        return false;
+    }
+
+
+    calculatePotOdds(currentBet, potSize) {
+        return currentBet / (potSize + currentBet);
+    }
  
-    async takeAction(currentBet, communityCards, numOpponents, potSize, minRaise) {
+    async takeAction(currentBet, communityCards, numOpponents, potSize, bigBlind, position) {
         const winProb = this.monteCarloWinProbability(communityCards, numOpponents, 5000);
         const callCost = currentBet - this.bet;
         const stackSize = this.money;
-        let raiseAmount = parseInt(this.calcOptimalRaiseAmount(winProb, stackSize, potSize, callCost, minRaise));
-        
-        if (raiseAmount + callCost + currentBet > stackSize) {
-            raiseAmount = stackSize - callCost - currentBet;
+
+        if (position === 0) {
+            position = "early";
+        } else if (position === 1 || position === 2) {
+            position = "middle";
+        } else {
+            position = "late";
         }
 
-        console.log(raiseAmount)
         console.log(`Win Probability: ${(winProb * 100).toFixed(2)}%`);
         console.log(this.hand.toString())
 
 
-        // ✅ 2. All-in logic for short stack or very strong hand
-        if (this.shortStack(stackSize, potSize) && winProb > 0.75 && this.raiseCount === 0 || (raiseAmount + callCost) >= stackSize && this.raiseCount === 0) {
-            console.log("Strong hand / Short Stack, All in")
-            this.raiseCount++;
-            return `Raise${stackSize - callCost - currentBet}`;
-        }
+        
+        const potOdds = this.calculatePotOdds(currentBet, potSize);
+        const aggressiveFactor = position === "late" ? 0.05 : 0; // late position bias
+        const effectiveWinProb = winProb + aggressiveFactor + (this.aggressionFactor * 0.1);
 
-        // ✅ 3. Fold if EV is negative and bluff unlikely
-        if (
-            winProb < this.calcPotOdds(callCost, potSize) &&
-            this.calcExpectedValue(winProb, potSize, callCost) < 0 &&
-            !this.shouldBluff(stackSize, raiseAmount, winProb)
-        ) {
-            if (callCost <= stackSize * (0.15 - 0.05*this.aggressionFactor) && winProb > (0.25 - 0.1*this.aggressionFactor)) {
-                console.log("Cheap Call despite negative EV") 
-                return 'Call';
+        console.log(`Pot Odds: ${(potOdds * 100).toFixed(2)}%`);
+        console.log(`Effective Win Probability: ${(effectiveWinProb * 100).toFixed(2)}%`);
+
+        // Decision logic
+        if (currentBet === 0) {
+            // No bet yet: check or raise
+            if (effectiveWinProb > 0.55 || this.shouldBluff(stackSize, potSize, position)) {
+                const raiseAmount = this.calculateRaiseAmount(position, bigBlind, stackSize, potSize, currentBet, winProb, callCost);
+                console.log('Strong hand, raise')
+                return `Raise${raiseAmount}`;
             }
-            console.log("Negative EV, No Bluff, Fold")
-            return 'Fold';
-        }
+            console.log('Check')
+            return "Check";
+        } else {
+            // Facing a bet: call, raise, or fold
 
-        // ✅ 4. Bluff raise if conditions met
-        if (this.shouldBluff(stackSize, raiseAmount, winProb) && this.shortStack(stackSize, potSize) && this.raiseCount === 0) {
-            console.log("Bluff Raise")
-            this.raiseCount++;
-            return `Raise${raiseAmount * this.aggressionFactor}`;
-        }
+            const lowCallCost = callCost <= (stackSize * 0.05) ; // cheap call threshold
 
-        // ✅ 5. Aggressive raise if EV is strong or threshold exceeded
-        if (
-            (this.calcExpectedValueRaise(winProb, potSize, raiseAmount) >
-                this.calcExpectedValue(winProb, potSize, callCost) &&
-                stackSize > raiseAmount + callCost && this.raiseCount === 0) ||
-            winProb > this.aggressionThreshold(numOpponents)
-        ) {
-            // Consider all-in for deep stack and very strong hand
-            if (this.deepStack(stackSize, potSize) && winProb > 0.75) {
-                console.log("Very Strong Hand, Deep Stack, All in")
-                this.raiseCount++;
-                return `Raise${stackSize}`;
+            if (effectiveWinProb > potOdds + 0.15) {
+                // Strong hand: raise or call
+                if (effectiveWinProb > 0.65 && stackSize > currentBet * 4) {
+                    const raiseAmount = this.calculateRaiseAmount(position, bigBlind, stackSize, potSize, currentBet, winProb, callCost);
+                    console.log('Stronger hand, raise')
+                    return `Raise${raiseAmount}`;
+                }
+                console.log('Call')
+                return "Call";
+            } else if (lowCallCost && Math.random() <= 0.95 || callCost <= stackSize * 0.15 && winProb > 0.3 && Math.random() <= 0.8) {
+                console.log('Cheap Call')
+                return "Call"
+            } else if (this.shouldBluff(stackSize, potSize, position)) {
+                const raiseAmount = this.calculateRaiseAmount(position, bigBlind, stackSize, potSize, currentBet, winProb, callCost);
+                console.log('Bluff raise')
+                return `Raise${raiseAmount}`;
+            } else {
+                console.log('Fold')
+                return "Fold";
             }
-            
-            console.log("Strong Hand, Raise")
-            this.raiseCount++;
-            return `Raise${raiseAmount}`;
         }
 
-        // ✅ 6. Call if EV is positive or pot odds justify it
-        if (this.calcExpectedValue(winProb, potSize, callCost) >= 0 || winProb > this.calcPotOdds(callCost, potSize)) {
-            console.log("Positive EV or Justified Call")
-            return 'Call';
-        }
-
-        // ✅ 7. Default fallback
-        return 'Fold';
     }
 
 

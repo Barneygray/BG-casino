@@ -10,6 +10,8 @@ export class Player {
         this.isSmallBlind = false;
         this.isBigBlind = false
         this.bet = 0;
+        this.contributionMainPot = 0;
+        this.contributionSidePot = 0;
     }
 
     win(bet) {
