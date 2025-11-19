@@ -4,12 +4,13 @@ const DEALER_HAND_BACK = "dealers-hand-back"
 
 import { Hand as PokerHand } from 'https://cdn.skypack.dev/pokersolver'
 
+
 export class Hand {
     constructor() {
         this.cards = [];
     }
 
-    cardAnimationBlackJack(newCardDiv, playerID, handNumber) {
+    cardAnimationBlackJack(newCardDiv, playerID, handNumber, card) {
         const cardBack = document.createElement('div')
         const movingCard = newCardDiv.cloneNode(true);
 
@@ -71,6 +72,7 @@ export class Hand {
         }
     }
 
+
     async cardAnimationPoker(newCardDiv, playerID, i=0) {
         return new Promise((resolve) => {
             const cardBack = document.createElement('div')
@@ -131,6 +133,9 @@ export class Hand {
         }
         newCardDiv.id = card.toString()
 
+        newCardDiv.setAttribute('role', 'img')
+        newCardDiv.setAttribute('aria-label', `${playerID} is dealt: ${card.toString()}`)
+
         const cardText1 = document.createElement('p')
         cardText1.textContent = card.toString()
         cardText1.className = "top-left"
@@ -143,11 +148,12 @@ export class Hand {
 
         const cardImg = document.createElement('img')
         cardImg.src = './images/Ernst-Young-Logo.png'
+        cardImg.alt = ""
         cardImg.className = 'card-image'
         newCardDiv.appendChild(cardImg)
 
         if (game === "blackjack") { 
-            this.cardAnimationBlackJack(newCardDiv, playerID, hand)
+            this.cardAnimationBlackJack(newCardDiv, playerID, hand, card)
         } else if (game === "poker") {
             await this.cardAnimationPoker(newCardDiv, playerID, i)
             await new Promise(resolve => setTimeout(resolve, 50));

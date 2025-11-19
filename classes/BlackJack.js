@@ -19,13 +19,39 @@ export class BlackJack {
         this.isSplit = false;
         this.numPlayers;
         this.players = [];
+        this.ariaQueue = [];
+        this.isUpdating = false;
     }
 
     async start() {
         await this.playerSetup();
         this.play()
     }
+    queueAnnouncement(message) {
+        this.ariaQueue.push(message);
+        this.processAriaQueue();
+    }
 
+    processAriaQueue() {
+        if (this.isUpdating || this.ariaQueue.length === 0) return;
+        this.isUpdating = true;
+
+        const liveRegion = document.getElementById('action-prompt-aria-live');
+        liveRegion.textContent = this.ariaQueue.shift();
+
+        setTimeout(() => {
+            this.isUpdating = false;
+            this.processAriaQueue();
+        }, 1000); // 1 second between announcements
+    }
+
+    announceCard(card, playerID, hiddenCard=false) {
+    const message = hiddenCard
+        ? `Dealer was dealt a hidden card`
+        : `Player ${playerID} was dealt ${card.rank} of ${card.suit}`;
+
+    this.queueAnnouncement(message, playerID);
+    }
     async createPromptNumResponse(prompt) {
         const promptText = document.createElement('p')
         promptText.textContent = prompt
@@ -273,10 +299,20 @@ export class BlackJack {
         handDiv.className = "hand"
         document.getElementById(player.name).appendChild(handDiv)
 
-        player.hand.addCard(this.deck.drawCard(), player.name, 1, "blackjack");
+        let card1 = this.deck.drawCard()
+        player.hand.addCard(card1, player.name, 1, "blackjack");
         setTimeout(() => {
-            player.hand.addCard(this.deck.drawCard(), player.name, 1, "blackjack");
+            this.announceCard(card1, player.name)
+        }, 1500);
+        let card2 = this.deck.drawCard()
+
+        setTimeout(() => {
+            player.hand.addCard(card2, player.name, 1, "blackjack");
         }, 500)
+
+        setTimeout(() => {
+            this.announceCard(card2, player.name)
+        }, 2000);
 
         if (this.isBlackJack(player)) {
             this.displayText('BlackJack!')
@@ -331,9 +367,13 @@ export class BlackJack {
     async dealerDeal() {
         this.dealerHand = new Hand()
         setTimeout(() => {
-            this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand", 1,"blackjack");
+            let card = this.deck.drawCard()
+            this.dealerHand.addCard(card, "dealers-hand", 1,"blackjack");
+            this.announceCard(card, "The dealer")
             setTimeout(() => {
-                this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand-back", 1,"blackjack")
+                card = this.deck.drawCard()
+                this.dealerHand.addCard(card, "dealers-hand-back", 1,"blackjack")
+                this.announceCard(card, "The dealer", true)
             }, 500);
         }, 500);
 
@@ -382,7 +422,9 @@ export class BlackJack {
         const choice = await this.createPromptButtonResponse(String(player.name) +", Hit or Stand?", "Hit", "Stand");
 
             if (choice === "Hit") {
-                await player.hand.addCard(this.deck.drawCard(), player.name, hand, "blackjack")
+                let card = this.deck.drawCard()
+                await player.hand.addCard(card, player.name, hand, "blackjack")
+                this.announceCard(card, player.name)
             } else if (choice === "Stand") {
                 break;
             }
@@ -403,10 +445,13 @@ export class BlackJack {
     async dealerTurn() {
         const cardBack = document.getElementById("dealer-card-back");
         cardBack.remove();
+        this.announceCard(this.dealerHand.cards[1], "The dealer")
         await new Promise(resolve => setTimeout(resolve, 300));
         while (this.dealerHand.getDealerTotal() < 17 && this.dealerHand.getDealerTotal() < this.highestScore) {
             await new Promise(resolve => setTimeout(resolve, 500));
-            this.dealerHand.addCard(this.deck.drawCard(), "dealers-hand", 1, "blackjack");
+            let card = this.deck.drawCard()
+            this.dealerHand.addCard(card, "dealers-hand", 1, "blackjack");
+            this.announceCard(card, "The dealer")
         }
 
         await new Promise(resolve => setTimeout(resolve, 500));
