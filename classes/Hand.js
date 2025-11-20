@@ -10,7 +10,7 @@ export class Hand {
         this.cards = [];
     }
 
-    cardAnimationBlackJack(newCardDiv, playerID, handNumber, card) {
+    cardAnimationBlackJack(newCardDiv, playerID, handNumber) {
         const cardBack = document.createElement('div')
         const movingCard = newCardDiv.cloneNode(true);
 
@@ -42,6 +42,7 @@ export class Hand {
                 movingCard.remove()
                 cardBack.classList.add('card-back')
                 cardBack.id = "dealer-card-back"
+                newCardDiv.setAttribute('aria-label', "Hidden card");
                 newCardDiv.appendChild(cardBack)
                 dealerHandDiv.appendChild(newCardDiv)
             }, 800)
@@ -133,13 +134,16 @@ export class Hand {
         }
         newCardDiv.id = card.toString()
 
-        newCardDiv.setAttribute('role', 'img')
-        newCardDiv.setAttribute('aria-label', `${playerID} is dealt: ${card.toString()}`)
+        newCardDiv.setAttribute('role', 'status')
+        newCardDiv.setAttribute('aria-label', card.toString());
+        newCardDiv.setAttribute('tabindex', '0')
+        newCardDiv.setAttribute('aria-live', 'polite');
 
         const cardText1 = document.createElement('p')
         cardText1.textContent = card.toString()
         cardText1.className = "top-left"
         newCardDiv.appendChild(cardText1)
+        newCardDiv.ariaLabel = card.toString()
         
         const cardText2 = document.createElement('p')
         cardText2.textContent = card.toString()

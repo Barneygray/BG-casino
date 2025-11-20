@@ -19,7 +19,7 @@ export class BlackJack {
         this.isSplit = false;
         this.numPlayers;
         this.players = [];
-        this.ariaQueue = [];
+        this.ariaQueue = [""];
         this.isUpdating = false;
     }
 
@@ -27,31 +27,8 @@ export class BlackJack {
         await this.playerSetup();
         this.play()
     }
-    queueAnnouncement(message) {
-        this.ariaQueue.push(message);
-        this.processAriaQueue();
-    }
 
-    processAriaQueue() {
-        if (this.isUpdating || this.ariaQueue.length === 0) return;
-        this.isUpdating = true;
 
-        const liveRegion = document.getElementById('action-prompt-aria-live');
-        liveRegion.textContent = this.ariaQueue.shift();
-
-        setTimeout(() => {
-            this.isUpdating = false;
-            this.processAriaQueue();
-        }, 1000); // 1 second between announcements
-    }
-
-    announceCard(card, playerID, hiddenCard=false) {
-    const message = hiddenCard
-        ? `Dealer was dealt a hidden card`
-        : `Player ${playerID} was dealt ${card.rank} of ${card.suit}`;
-
-    this.queueAnnouncement(message, playerID);
-    }
     async createPromptNumResponse(prompt) {
         const promptText = document.createElement('p')
         promptText.textContent = prompt
@@ -138,6 +115,7 @@ export class BlackJack {
         actionPromptBox.appendChild(promptText)
         actionPromptBox.appendChild(button1)
         actionPromptBox.appendChild(button2)
+        actionPromptBox.focus();
 
         return new Promise((resolve) => {
             button1.addEventListener("click", () => {
@@ -183,10 +161,22 @@ export class BlackJack {
                 newPlayerDiv.classList.add('player')
                 newPlayerDiv.id = p.name
 
-                const playerBalance = document.createElement('p')
+                newPlayerDiv.setAttribute('role', 'region');
+                newPlayerDiv.setAttribute('aria-label', `Player ${p.name}`);
+                newPlayerDiv.setAttribute('tabindex', '0')
+                newPlayerDiv.setAttribute('aria-live', 'polite');
+
+
+                const playerBalance = document.createElement('div')
                 playerBalance.textContent = p.name + ': £' + p.moneyLeft
                 playerBalance.id = String(p.name + 'balance')
                 playerBalance.className = "player-balance"
+
+                playerBalance.setAttribute('role', 'status');
+                playerBalance.setAttribute('aria-label', `Balance for ${p.name}: £${p.moneyLeft}`);
+                playerBalance.setAttribute('aria-live', 'polite');
+                playerBalance.setAttribute('tabindex', '0')
+
                 newPlayerDiv.appendChild(playerBalance)
 
                 playersDiv.appendChild(newPlayerDiv)
@@ -301,18 +291,12 @@ export class BlackJack {
 
         let card1 = this.deck.drawCard()
         player.hand.addCard(card1, player.name, 1, "blackjack");
-        setTimeout(() => {
-            this.announceCard(card1, player.name)
-        }, 1500);
+        
         let card2 = this.deck.drawCard()
 
         setTimeout(() => {
             player.hand.addCard(card2, player.name, 1, "blackjack");
         }, 500)
-
-        setTimeout(() => {
-            this.announceCard(card2, player.name)
-        }, 2000);
 
         if (this.isBlackJack(player)) {
             this.displayText('BlackJack!')
@@ -366,14 +350,13 @@ export class BlackJack {
 
     async dealerDeal() {
         this.dealerHand = new Hand()
+
+        let card1 = this.deck.drawCard()
+        let card2 = this.deck.drawCard()
         setTimeout(() => {
-            let card = this.deck.drawCard()
-            this.dealerHand.addCard(card, "dealers-hand", 1,"blackjack");
-            this.announceCard(card, "The dealer")
+            this.dealerHand.addCard(card1, "dealers-hand", 1,"blackjack");
             setTimeout(() => {
-                card = this.deck.drawCard()
-                this.dealerHand.addCard(card, "dealers-hand-back", 1,"blackjack")
-                this.announceCard(card, "The dealer", true)
+                this.dealerHand.addCard(card2, "dealers-hand-back", 1,"blackjack")
             }, 500);
         }, 500);
 
@@ -425,6 +408,7 @@ export class BlackJack {
                 let card = this.deck.drawCard()
                 await player.hand.addCard(card, player.name, hand, "blackjack")
                 this.announceCard(card, player.name)
+                this.processAriaQueue();
             } else if (choice === "Stand") {
                 break;
             }
@@ -445,13 +429,15 @@ export class BlackJack {
     async dealerTurn() {
         const cardBack = document.getElementById("dealer-card-back");
         cardBack.remove();
-        this.announceCard(this.dealerHand.cards[1], "The dealer")
+
+        const hiddenCard = document.querySelector('.dealers-hand').lastChild
+        hiddenCard.setAttribute('aria-label', hiddenCard.id);
+        
         await new Promise(resolve => setTimeout(resolve, 300));
         while (this.dealerHand.getDealerTotal() < 17 && this.dealerHand.getDealerTotal() < this.highestScore) {
             await new Promise(resolve => setTimeout(resolve, 500));
             let card = this.deck.drawCard()
             this.dealerHand.addCard(card, "dealers-hand", 1, "blackjack");
-            this.announceCard(card, "The dealer")
         }
 
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -548,10 +534,16 @@ export class BlackJack {
         for (let i in this.players){
             let player = this.players[i];
             document.getElementById(player.name).innerHTML = ""
-            const playerBalance = document.createElement('p')
+            const playerBalance = document.createElement('div')
             playerBalance.textContent = player.name + ': £' + player.moneyLeft
             playerBalance.id = String(player.name + 'balance')
             playerBalance.className = "player-balance"
+
+            playerBalance.setAttribute('role', 'status');
+            playerBalance.setAttribute('aria-label', `Balance for ${player.name}: £${player.moneyLeft}`);
+            playerBalance.setAttribute('aria-live', 'polite');
+            playerBalance.setAttribute('tabindex', '0')
+
             document.getElementById(player.name).appendChild(playerBalance)
         }
         for (let i in this.players) {
@@ -568,7 +560,7 @@ export class BlackJack {
         })
 
         await this.dealerDeal()
-
+        
         for (let i in this.players) {
             let player = this.players[i];
             if (player.isStillActive) {

@@ -7,36 +7,33 @@
     <title>BlackJack</title>
 </head>
 <body>
-    <div class = "table">
-        <!-- Dealer Section -->
-        <div class = "dealers-hand" id="dealers-hand">
-
+    <main class = "table" role="main">
+        <!-- Home Button -->
+        <div class="home-div">
+            <button class="home-button" aria-label="Go to home page" onclick="location.href='index.html'">
+                ⌂
+            </button>
         </div>
+        <!-- Dealer Section -->
+        <section class = "dealers-hand" id="dealers-hand" aria-label="Dealer's Hand" aria-live="polite" tabindex="0">
+
+        </section>
         <!-- Deck -->
-         <div class = "deck">
-            <div class="card deck-card">
+         <section class = "deck" aria-label="Card deck">
+            <div class="card deck-card" aria-hidden="true">
                 <div class="card-back">
                     
                 </div>
             </div>
-         </div>
+        </section>
         <!-- Action Prompt Box -->
-         <div class = "action-prompt-box">
-            
-         </div>
+         <section class = "action-prompt-box" aria-live="polite" aria-atomic="true" tabindex="0">
+         </section>
         <!-- Player Section -->
-        <div class = "players-hands" id="players-hands">
+        <section class = "players-hands" id="players-hands" aria-label="Player's hands" aria-live="polite" tabindex="0">
 
-        </div>
-        <!-- Home Button -->
-         <div class="home-div">
-            <a href="index.html">
-            <button class="home-button">
-                ⌂
-            </button>
-            </a>
-        </div>
-    </div>
+        </section>
+    </main>
 <script type="module" src="BlackJackOOPUI.js"></script>
 </body>
 </html>
