@@ -407,8 +407,6 @@ export class BlackJack {
             if (choice === "Hit") {
                 let card = this.deck.drawCard()
                 await player.hand.addCard(card, player.name, hand, "blackjack")
-                this.announceCard(card, player.name)
-                this.processAriaQueue();
             } else if (choice === "Stand") {
                 break;
             }

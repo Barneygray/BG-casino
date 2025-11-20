@@ -44,6 +44,7 @@ export class PokerOpponent {
             return 'Unknown'
         }
     }
+    
     monteCarloWinProbability(communityCards, numOpponents, iterations) {
         let wins = 0
     

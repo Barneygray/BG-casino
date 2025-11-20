@@ -419,11 +419,12 @@ export class Poker {
 
     updateSidePot(allInPlayer) {
         const allInAmount = allInPlayer.contributionMainPot;
-
+        allInPlayer.contributionMainPot = 0;
         for (let player of this.nonFoldedPlayers) {
             if (player.contributionMainPot > allInAmount) {
                 const difference = player.contributionMainPot - allInAmount;
 
+                this.pot -= difference;
                 player.contributionSidePot += difference;
                 this.sidePot += difference;
                 player.contributionMainPot = allInAmount;
@@ -441,6 +442,7 @@ export class Poker {
             this.updatePot(currentPlayer.money)
             currentPlayer.money = 0;
             this.updateSidePot(currentPlayer)
+            
         } else {
             currentPlayer.bet = this.currentBet;
             currentPlayer.money -= callDifference
@@ -640,15 +642,18 @@ export class Poker {
             if (winners.some(w => w.descr === solvedHand.descr)) {
                 winningPlayers.push(player)
                 console.log(player.name)
+                console.log(winningPlayers)
                 const share = this.pot / winners.length
-
+                console.log(share)
                 for (let player of winningPlayers) {
+                    console.log(player.name)
                     player.money += share;
                     this.updatePlayerHTML(player, player.name)
                 }
                 this.pot = 0;
 
                 const sideEligible = winningPlayers.filter(p => p.contributionSidePot > 0);
+                console.log(sideEligible)
                 if (sideEligible.length > 0 && this.sidePot > 0) {
                     const sideShare = this.sidePot / sideEligible.length;
                     sideEligible.forEach(player => player.money += sideShare)
