@@ -29,7 +29,7 @@ export class BlackJack {
     }
 
 
-    async createPromptNumResponse(prompt) {
+    async createPromptNumResponse(prompt, players=false) {
         const promptText = document.createElement('p')
         promptText.textContent = prompt
         promptText.className = "prompt-text"
@@ -50,15 +50,26 @@ export class BlackJack {
                     const i = e.target;
                     const value = i.value.trim();
 
-                    if (/^\d+$/.test(value)) {
-                        resolve(input)
+                    if (players) {
+                        if (/^\d+$/.test(value) && value >=1 && value <= 4) {
+                            resolve(input)
+                        } else {
+                            actionPromptBox.classList.add("shake")
+                            setTimeout(() => {
+                                actionPromptBox.classList.remove("shake")
+                            }, 300)
+                        }
                     } else {
-                        actionPromptBox.classList.add("shake")
-                        setTimeout(() => {
-                            actionPromptBox.classList.remove("shake")
-                        }, 300)
+                        if (/^\d+$/.test(value) ) {
+                            resolve(input)
+                        } else {
+                            actionPromptBox.classList.add("shake")
+                            setTimeout(() => {
+                                actionPromptBox.classList.remove("shake")
+                            }, 300)
+                        }
                     }
-                }
+                    }
             })
         })
     } 
@@ -148,7 +159,7 @@ export class BlackJack {
 
     async playerSetup() {
         this.players = [];
-        const numPlayers = await this.createPromptNumResponse("How many players? (1-4):")
+        const numPlayers = await this.createPromptNumResponse("How many players? (1-4):", true)
         this.numPlayers = parseInt(numPlayers)
 
         if (!isNaN(Number(this.numPlayers)) && this.numPlayers >= 1 && this.numPlayers <= 4) {
