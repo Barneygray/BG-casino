@@ -61,7 +61,7 @@ export class Hand {
         const handRect = handDiv.getBoundingClientRect();
         const handRectCenter = handRect.left + handRect.width / 2
         if (isPlayer) {
-            movingCard.style.transform = `translate(${handRect.left - deckRect.left + 50}px, ${handRect.top - deckRect.top+ 100}px)`;
+            movingCard.style.transform = `translate(${handRect.left - deckRect.left + 120}px, ${handRect.top - deckRect.top}px)`;
         } else if (isCC) {
             if (cardIndex === 0) {
                 movingCard.style.transform = `translate(${handRectCenter - deckRect.left - 100}px, ${handRect.top - deckRect.top + 30}px)`;
